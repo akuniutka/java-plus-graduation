@@ -321,12 +321,12 @@ class EventServiceImpl implements EventService {
 
     private List<Request> setStatusAndSaveAll(final List<Request> requests, final RequestState status) {
         if (CollectionUtils.isEmpty(requests)) {
-            log.info("No requests to update status to %s", status);
+            log.info("No requests to update status to {}", status);
             return List.of();
         }
         requests.forEach(request -> request.setStatus(status));
         final List<Request> savedRequests = requestRepository.saveAll(requests);
-        log.info("%s set to status %s", savedRequests.size(), status);
+        log.info("{} set to status {}", savedRequests.size(), status);
         return savedRequests;
     }
 }
