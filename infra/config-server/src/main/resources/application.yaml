@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: config-server
+  main:
+    banner-mode: off
+  profiles:
+    active: native
+  cloud:
+    config:
+      server:
+        native:
+          search-locations:
+            - classpath:config/infra/{application}
+            - classpath:config/core/{application}
+            - classpath:config/stats/{application}
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.value}
+  client:
+    service-url:
+      defaultZone: http://discovery-server:8761/eureka/
+    register-with-eureka: true
+server:
+  port: 0
