@@ -9,11 +9,12 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>explore-with-me-stats</artifactId>
+    <artifactId>explore-with-me-infra</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>stats-dto</module>
-        <module>stats-service</module>
+        <module>discovery-server</module>
+        <module>config-server</module>
+        <module>gateway-server</module>
     </modules>
 
 </project>

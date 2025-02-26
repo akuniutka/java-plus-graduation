@@ -15,6 +15,7 @@
 		<module>common</module>
 		<module>stats</module>
 		<module>core</module>
+		<module>infra</module>
 	</modules>
 
 	<groupId>ru.practicum</groupId>
@@ -25,7 +26,20 @@
 	<properties>
 		<java.version>21</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<spring-cloud-dependecies.version>2023.0.3</spring-cloud-dependecies.version>
 	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud-dependecies.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<build>
 		<pluginManagement>

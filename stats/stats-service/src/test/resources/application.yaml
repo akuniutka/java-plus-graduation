@@ -8,3 +8,13 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+    open-in-view: false
+  sql:
+    init:
+      mode: always
+  cloud:
+    config:
+      enabled: false
+eureka:
+  client:
+    enabled: false

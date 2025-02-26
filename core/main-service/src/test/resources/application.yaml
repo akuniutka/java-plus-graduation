@@ -5,11 +5,20 @@ spring:
     url: jdbc:h2:mem:ewm
     username: ewm
     password: ewm
-  jpa.hibernate.ddl-auto: validate
-stats:
-  server:
-    uri: http://localhost:9090
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  sql:
+    init:
+      mode: always
+  cloud:
+    config:
+      enabled: false
 ewm:
   timeout:
     admin: PT1H
     user: PT2H
+eureka:
+  client:
+    enabled: false
