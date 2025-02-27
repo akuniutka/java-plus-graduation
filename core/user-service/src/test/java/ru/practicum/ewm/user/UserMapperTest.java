@@ -67,9 +67,9 @@ class UserMapperTest {
         user1.setEmail(EMAIL_1);
 
         User user2 = new User();
-        user2.setId(UserTestUtil.USER_ID_2);
-        user2.setName(UserTestUtil.USER_NAME_2);
-        user2.setEmail(UserTestUtil.EMAIL_2);
+        user2.setId(USER_ID_2);
+        user2.setName(USER_NAME_2);
+        user2.setEmail(EMAIL_2);
 
         List<UserDto> result = userMapper.mapToDto(List.of(user1, user2));
 
@@ -78,9 +78,9 @@ class UserMapperTest {
         assertEquals(USER_ID_1, result.get(0).id());
         assertEquals(USER_NAME_1, result.get(0).name());
         assertEquals(EMAIL_1, result.get(0).email());
-        assertEquals(UserTestUtil.USER_ID_2, result.get(1).id());
-        assertEquals(UserTestUtil.USER_NAME_2, result.get(1).name());
-        assertEquals(UserTestUtil.EMAIL_2, result.get(1).email());
+        assertEquals(USER_ID_2, result.get(1).id());
+        assertEquals(USER_NAME_2, result.get(1).name());
+        assertEquals(EMAIL_2, result.get(1).email());
     }
 
     @Test
