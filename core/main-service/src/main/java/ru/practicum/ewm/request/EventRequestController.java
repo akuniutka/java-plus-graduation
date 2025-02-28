@@ -1,4 +1,4 @@
-package ru.practicum.ewm.event;
+package ru.practicum.ewm.request;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.ewm.common.HttpRequestResponseLogger;
-import ru.practicum.ewm.request.RequestDto;
 
 import java.util.List;
 
@@ -21,7 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 class EventRequestController extends HttpRequestResponseLogger {
 
-    private final EventService events;
+    private final RequestService service;
     private final EventRequestDtoValidatorExtension eventRequestDtoValidatorExtension;
 
     @InitBinder
@@ -35,7 +34,7 @@ class EventRequestController extends HttpRequestResponseLogger {
             @PathVariable final long eventId,
             final HttpServletRequest httpRequest) {
         logHttpRequest(httpRequest);
-        final List<RequestDto> dtos = events.getRequests(userId, eventId);
+        final List<RequestDto> dtos = service.getRequests(userId, eventId);
         logHttpResponse(httpRequest, dtos);
         return dtos;
     }
@@ -47,7 +46,7 @@ class EventRequestController extends HttpRequestResponseLogger {
             @RequestBody @Valid final UpdateEventRequestStatusDto updateDto,
             final HttpServletRequest httpRequest) {
         logHttpRequest(httpRequest, updateDto);
-        final EventRequestStatusDto dto = events.processRequests(eventId, updateDto, userId);
+        final EventRequestStatusDto dto = service.processRequests(eventId, updateDto, userId);
         logHttpResponse(httpRequest, dto);
         return dto;
     }

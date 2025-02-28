@@ -9,13 +9,14 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>explore-with-me-user</artifactId>
-
-    <properties>
-        <argLine>-XX:+EnableDynamicAgentLoading -Xshare:off</argLine>
-    </properties>
+    <artifactId>explore-with-me-event</artifactId>
 
     <dependencies>
+        <dependency>
+            <groupId>ru.practicum</groupId>
+            <artifactId>explore-with-me-stats-dto</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>ru.practicum</groupId>
             <artifactId>explore-with-me-common</artifactId>
@@ -24,6 +25,11 @@
         <dependency>
             <groupId>ru.practicum</groupId>
             <artifactId>explore-with-me-main-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.practicum</groupId>
+            <artifactId>explore-with-me-user</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -41,6 +47,10 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
