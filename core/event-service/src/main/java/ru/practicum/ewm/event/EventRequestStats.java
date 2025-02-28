@@ -1,6 +1,6 @@
 package ru.practicum.ewm.event;
 
-interface EventRequestStats {
+public interface EventRequestStats {
 
     Long getId();
 

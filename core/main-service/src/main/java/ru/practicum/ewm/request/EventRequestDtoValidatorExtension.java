@@ -1,10 +1,9 @@
-package ru.practicum.ewm.event;
+package ru.practicum.ewm.request;
 
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
-import ru.practicum.ewm.request.RequestState;
 
 @Component
 class EventRequestDtoValidatorExtension implements Validator {

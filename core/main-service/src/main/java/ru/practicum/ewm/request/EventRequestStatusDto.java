@@ -1,6 +1,4 @@
-package ru.practicum.ewm.event;
-
-import ru.practicum.ewm.request.RequestDto;
+package ru.practicum.ewm.request;
 
 import java.util.List;
 
