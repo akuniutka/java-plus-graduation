@@ -1,12 +1,16 @@
-package ru.practicum.ewm.user;
+package ru.practicum.ewm.user.mapper;
 
 import org.springframework.stereotype.Component;
+import ru.practicum.ewm.user.dto.UserShortDto;
+import ru.practicum.ewm.user.dto.NewUserRequest;
+import ru.practicum.ewm.user.dto.UserDto;
+import ru.practicum.ewm.user.model.User;
 
 import java.util.List;
 
 @Component
 public class UserMapper {
-    User mapToUser(NewUserRequest dto) {
+    public User mapToUser(NewUserRequest dto) {
         if (dto == null) {
             return null;
         }
@@ -25,7 +29,7 @@ public class UserMapper {
         return user;
     }
 
-    UserDto mapToDto(final User user) {
+    public UserDto mapToDto(final User user) {
         if (user == null) {
             return null;
         }
@@ -36,7 +40,7 @@ public class UserMapper {
                 .build();
     }
 
-    List<UserDto> mapToDto(final List<User> users) {
+    public List<UserDto> mapToDto(final List<User> users) {
         if (users == null) {
             return null;
         }
@@ -53,5 +57,14 @@ public class UserMapper {
                 .id(user.getId())
                 .name(user.getName())
                 .build();
+    }
+
+    public List<UserShortDto> mapToShortDto(final List<User> users) {
+        if (users == null) {
+            return null;
+        }
+        return users.stream()
+                .map(this::mapToShortDto)
+                .toList();
     }
 }

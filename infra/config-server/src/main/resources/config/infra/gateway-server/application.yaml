@@ -7,6 +7,10 @@ spring:
         locator:
           enabled: true
       routes:
+        - id: user-service_route
+          uri: lb://user-service
+          predicates:
+            - Path=/admin/users/**
         - id: ewm-main-service_route
           uri: lb://ewm-main-service
           predicates:

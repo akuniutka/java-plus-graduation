@@ -1,11 +1,15 @@
-package ru.practicum.ewm.user;
+package ru.practicum.ewm.user.mapper;
 
 import org.junit.jupiter.api.Test;
+import ru.practicum.ewm.user.dto.UserShortDto;
+import ru.practicum.ewm.user.dto.NewUserRequest;
+import ru.practicum.ewm.user.dto.UserDto;
+import ru.practicum.ewm.user.model.User;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static ru.practicum.ewm.user.UserTestUtil.*;
+import static ru.practicum.ewm.user.util.UserTestUtil.*;
 
 class UserMapperTest {
     private final UserMapper userMapper = new UserMapper();
@@ -103,6 +107,6 @@ class UserMapperTest {
 
     @Test
     void testNullUserToUserShortDto() {
-        assertNull(userMapper.mapToShortDto(null));
+        assertNull(userMapper.mapToShortDto((User) null));
     }
 }
