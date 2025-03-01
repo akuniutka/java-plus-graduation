@@ -2,6 +2,7 @@ package ru.practicum.ewm.user;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import ru.practicum.ewm.user.dto.UserShortDto;
 
 public class UserTestUtil {
     public static final Pageable PAGEABLE = PageRequest.of(0, 10);

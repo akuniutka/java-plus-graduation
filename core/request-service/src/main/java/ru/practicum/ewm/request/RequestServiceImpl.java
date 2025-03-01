@@ -5,14 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import ru.practicum.ewm.client.UserClient;
 import ru.practicum.ewm.event.Event;
 import ru.practicum.ewm.event.EventService;
 import ru.practicum.ewm.event.EventState;
 import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.exception.NotPossibleException;
-import ru.practicum.ewm.user.User;
-import ru.practicum.ewm.user.UserService;
+import ru.practicum.ewm.user.dto.UserShortDto;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -21,25 +22,30 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 class RequestServiceImpl implements RequestService {
+
     private final RequestRepository requestRepository;
     private final EventService eventService;
-    private final UserService userService;
+    private final UserClient userClient;
 
     @Override
     public RequestDto create(long userId, long eventId) {
         if (!requestRepository.findAllByRequesterIdAndEventIdAndStatusNotLike(userId, eventId,
-                RequestState.CANCELED).isEmpty())
+                RequestState.CANCELED).isEmpty()) {
             throw new NotPossibleException("Request already exists");
-        User user = userService.getById(userId);
+        }
+        requireUserExists(userId);
         Event event = eventService.getById(eventId);
-        if (userId == event.getInitiator().getId())
+        if (userId == event.getInitiatorId()) {
             throw new NotPossibleException("User is Initiator of event");
-        if (!event.getState().equals(EventState.PUBLISHED))
+        }
+        if (!event.getState().equals(EventState.PUBLISHED)) {
             throw new NotPossibleException("Event is not published");
-        if (event.getParticipantLimit() != 0 && event.getConfirmedRequests() >= event.getParticipantLimit())
-                throw new NotPossibleException("Request limit exceeded");
+        }
+        if (event.getParticipantLimit() != 0 && event.getConfirmedRequests() >= event.getParticipantLimit()) {
+            throw new NotPossibleException("Request limit exceeded");
+        }
         Request newRequest = new Request();
-        newRequest.setRequester(user);
+        newRequest.setRequesterId(userId);
         newRequest.setEvent(event);
         if (event.isRequestModeration() && event.getParticipantLimit() != 0) {
             newRequest.setStatus(RequestState.PENDING);
@@ -51,7 +57,7 @@ class RequestServiceImpl implements RequestService {
 
     @Override
     public List<RequestDto> getAllRequestByUserId(final long userId) {
-        userService.getById(userId);
+        requireUserExists(userId);
         return requestRepository.findAllByRequesterId(userId).stream()
                 .map(RequestMapper::mapToRequestDto)
                 .toList();
@@ -101,25 +107,33 @@ class RequestServiceImpl implements RequestService {
     @Override
     @Transactional
     public RequestDto cancel(final long userId, final long requestId) {
-        userService.getById(userId);
+        requireUserExists(userId);
         Request request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new NotFoundException(Request.class, requestId));
-        if (!request.getRequester().getId().equals(userId))
+        if (!request.getRequesterId().equals(userId)) {
             throw new NotPossibleException("Request is not by user");
+        }
         request.setStatus(RequestState.CANCELED);
         return RequestMapper.mapToRequestDto(requestRepository.save(request));
+    }
+
+    private void requireUserExists(final long userId) {
+        final UserShortDto user = userClient.getById(userId);
+        if (user.name() == null) {
+            throw new NotFoundException("User", userId);
+        }
     }
 
     private void requireAllExist(final List<Long> ids, final List<Request> requests) {
         final Set<Long> idsFound = requests.stream()
                 .map(Request::getId)
                 .collect(Collectors.toSet());
-        final Set<Long> idsMissing = ids.stream()
-                .filter(id -> !idsFound.contains(id))
-                .collect(Collectors.toSet());
-        if (!idsMissing.isEmpty()) {
-            throw new NotFoundException(Request.class, idsMissing);
+        final Set<Long> idsMissing = new HashSet<>(ids);
+        idsMissing.removeAll(idsFound);
+        if (idsMissing.isEmpty()) {
+            return;
         }
+        throw new NotFoundException(Request.class, idsMissing);
     }
 
     private void requireAllHavePendingStatus(final List<Request> requests) {
@@ -127,13 +141,14 @@ class RequestServiceImpl implements RequestService {
                 .filter(request -> request.getStatus() != RequestState.PENDING)
                 .map(Request::getId)
                 .collect(Collectors.toSet());
-        if (!idsNotPending.isEmpty()) {
-            final String idsStr = idsNotPending.stream()
-                    .map(String::valueOf)
-                    .collect(Collectors.joining(", "));
-            throw new NotPossibleException("Request(s) %s with wrong status (must be %s)"
-                    .formatted(idsStr, RequestState.PENDING));
+        if (idsNotPending.isEmpty()) {
+            return;
         }
+        final String idsStr = idsNotPending.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(", "));
+        throw new NotPossibleException("Request(s) %s with wrong status (must be %s)"
+                .formatted(idsStr, RequestState.PENDING));
     }
 
     private List<Request> setStatusAndSaveAll(final List<Request> requests, final RequestState status) {

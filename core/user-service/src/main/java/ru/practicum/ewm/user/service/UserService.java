@@ -1,10 +1,16 @@
-package ru.practicum.ewm.user;
+package ru.practicum.ewm.user.service;
 
 import org.springframework.data.domain.Pageable;
+import ru.practicum.ewm.user.dto.NewUserRequest;
+import ru.practicum.ewm.user.dto.UserDto;
+import ru.practicum.ewm.user.model.User;
 
 import java.util.List;
+import java.util.Set;
 
 public interface UserService {
+
+    List<User> findAllByIdIn(Set<Long> ids);
 
     User getById(long id);
 
