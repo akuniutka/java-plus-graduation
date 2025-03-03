@@ -33,7 +33,12 @@
         </dependency>
         <dependency>
             <groupId>ru.practicum</groupId>
-            <artifactId>explore-with-me-event</artifactId>
+            <artifactId>explore-with-me-event-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.practicum</groupId>
+            <artifactId>explore-with-me-request</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

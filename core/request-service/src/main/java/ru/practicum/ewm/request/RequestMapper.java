@@ -12,7 +12,7 @@ public class RequestMapper {
                 .requester(request.getRequesterId())
                 .id(request.getId())
                 .created(request.getCreated())
-                .event(request.getEvent().getId())
+                .event(request.getEventId())
                 .status(request.getStatus())
                 .build();
     }

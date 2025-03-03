@@ -1,5 +1,7 @@
 package ru.practicum.ewm.category;
 
+import ru.practicum.ewm.category.dto.CategoryDto;
+
 public class CategoryTestUtil {
     public static final long CATEGORY_ID_1 = 1L;
     public static final String CATEGORY_NAME_1 = "Название категории 1";

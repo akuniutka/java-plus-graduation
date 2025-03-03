@@ -1,7 +1,6 @@
 package ru.practicum.ewm.subscription;
 
-import ru.practicum.ewm.event.EventFilter;
-import ru.practicum.ewm.event.EventShortDto;
+import ru.practicum.ewm.event.dto.EventShortDto;
 
 import java.util.List;
 

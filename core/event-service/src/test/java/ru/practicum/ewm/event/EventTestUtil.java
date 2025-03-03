@@ -1,5 +1,7 @@
 package ru.practicum.ewm.event;
 
+import ru.practicum.ewm.event.dto.EventShortDto;
+
 import java.time.LocalDateTime;
 import java.time.Month;
 

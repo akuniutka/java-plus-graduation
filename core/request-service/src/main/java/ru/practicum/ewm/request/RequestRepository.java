@@ -3,9 +3,9 @@ package ru.practicum.ewm.request;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import ru.practicum.ewm.event.EventRequestStats;
 
 import java.util.List;
+import java.util.Set;
 
 public interface RequestRepository extends JpaRepository<Request, Long> {
 
@@ -13,13 +13,20 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     List<Request> findAllByRequesterId(long userId);
 
-    List<Request> findAllByEventIdAndEventInitiatorId(long eventId, long initiatorId);
+    List<Request> findAllByEventId(long eventId);
 
-    List<Request> findAllByEventIdAndEventInitiatorIdAndIdIn(long eventId, long initiatorId, List<Long> ids);
+    List<Request> findAllByEventIdAndIdIn(long eventId, List<Long> ids);
 
-    List<Request> findAllByEventIdAndEventInitiatorIdAndStatus(long eventId, long initiatorId, RequestState status);
+    List<Request> findAllByEventIdAndStatus(long eventId, RequestState status);
 
-    @Query("select r.event.id as id, count(r.id) as requests from Request r "
-            + "where r.event.id in :ids and r.status = :status group by r.event.id")
-    List<EventRequestStats> getRequestStats(@Param("ids") List<Long> ids, @Param("status") RequestState status);
+    @Query("select r.eventId as id, count(r.id) as requests from Request r "
+            + "where r.eventId in :ids and r.status = :status group by r.eventId")
+    List<RequestStats> getRequestStats(@Param("ids") Set<Long> ids, @Param("status") RequestState status);
+
+    interface RequestStats {
+
+        long getId();
+
+        long getRequests();
+    }
 }

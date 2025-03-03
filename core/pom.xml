@@ -19,6 +19,8 @@
         <module>request-service</module>
         <module>extra-services</module>
         <module>user-service-api</module>
+        <module>request-service-api</module>
+        <module>event-service-api</module>
     </modules>
 
 </project>

@@ -1,7 +1,7 @@
 package ru.practicum.ewm.compilation;
 
 import lombok.Builder;
-import ru.practicum.ewm.event.EventShortDto;
+import ru.practicum.ewm.event.dto.EventShortDto;
 
 import java.util.Set;
 
