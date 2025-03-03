@@ -5,10 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import ru.practicum.ewm.client.UserClient;
-import ru.practicum.ewm.event.Event;
-import ru.practicum.ewm.event.EventService;
-import ru.practicum.ewm.event.EventState;
+import ru.practicum.ewm.event.client.EventClient;
+import ru.practicum.ewm.event.dto.EventFullDto;
+import ru.practicum.ewm.request.dto.RequestStats;
+import ru.practicum.ewm.user.client.UserClient;
+import ru.practicum.ewm.event.model.EventState;
 import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.exception.NotPossibleException;
 import ru.practicum.ewm.user.dto.UserShortDto;
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
 class RequestServiceImpl implements RequestService {
 
     private final RequestRepository requestRepository;
-    private final EventService eventService;
+    private final EventClient eventClient;
     private final UserClient userClient;
 
     @Override
@@ -34,20 +35,20 @@ class RequestServiceImpl implements RequestService {
             throw new NotPossibleException("Request already exists");
         }
         requireUserExists(userId);
-        Event event = eventService.getById(eventId);
-        if (userId == event.getInitiatorId()) {
-            throw new NotPossibleException("User is Initiator of event");
+        final EventFullDto event = eventClient.getById(eventId);
+        if (userId == event.initiator().id()) {
+            throw new NotPossibleException("User is initiator of event");
         }
-        if (!event.getState().equals(EventState.PUBLISHED)) {
+        if (!event.state().equals(EventState.PUBLISHED)) {
             throw new NotPossibleException("Event is not published");
         }
-        if (event.getParticipantLimit() != 0 && event.getConfirmedRequests() >= event.getParticipantLimit()) {
+        if (event.participantLimit() != 0 && event.confirmedRequests() >= event.participantLimit()) {
             throw new NotPossibleException("Request limit exceeded");
         }
         Request newRequest = new Request();
         newRequest.setRequesterId(userId);
-        newRequest.setEvent(event);
-        if (event.isRequestModeration() && event.getParticipantLimit() != 0) {
+        newRequest.setEventId(eventId);
+        if (event.requestModeration() && event.participantLimit() != 0) {
             newRequest.setStatus(RequestState.PENDING);
         } else {
             newRequest.setStatus(RequestState.CONFIRMED);
@@ -65,20 +66,19 @@ class RequestServiceImpl implements RequestService {
 
     @Override
     public List<RequestDto> getRequests(final long userId, final long eventId) {
-        eventService.getByIdAndUserId(eventId, userId);
-        return RequestMapper.mapToRequestDto(requestRepository.findAllByEventIdAndEventInitiatorId(eventId, userId));
+        eventClient.getByIdAndInitiatorId(eventId, userId);
+        return RequestMapper.mapToRequestDto(requestRepository.findAllByEventId(eventId));
     }
 
     @Override
     @Transactional
     public EventRequestStatusDto processRequests(final long id, final UpdateEventRequestStatusDto dto,
             final long userId) {
-        final Event event = eventService.getByIdAndUserId(id, userId);
+        final EventFullDto event = eventClient.getByIdAndInitiatorId(id, userId);
         if (CollectionUtils.isEmpty(dto.requestIds())) {
             return new EventRequestStatusDto(List.of(), List.of());
         }
-        final List<Request> requests = requestRepository.findAllByEventIdAndEventInitiatorIdAndIdIn(id, userId,
-                dto.requestIds());
+        final List<Request> requests = requestRepository.findAllByEventIdAndIdIn(id, dto.requestIds());
         requireAllExist(dto.requestIds(), requests);
         requireAllHavePendingStatus(requests);
 
@@ -87,16 +87,16 @@ class RequestServiceImpl implements RequestService {
         if (dto.status() == RequestState.REJECTED) {
             rejectedRequests = setStatusAndSaveAll(requests, RequestState.REJECTED);
         } else {
-            final long availableSlots = event.getParticipantLimit() == 0
+            final long availableSlots = event.participantLimit() == 0
                     ? Long.MAX_VALUE
-                    : event.getParticipantLimit() - event.getConfirmedRequests();
+                    : event.participantLimit() - event.confirmedRequests();
             if (requests.size() > availableSlots) {
                 throw new NotPossibleException("Not enough available participation slots");
             }
             confirmedRequests = setStatusAndSaveAll(requests, RequestState.CONFIRMED);
             if (requests.size() == availableSlots) {
-                final List<Request> pendingRequests = requestRepository.findAllByEventIdAndEventInitiatorIdAndStatus(id,
-                        userId, RequestState.PENDING);
+                final List<Request> pendingRequests = requestRepository.findAllByEventIdAndStatus(id,
+                        RequestState.PENDING);
                 rejectedRequests = setStatusAndSaveAll(pendingRequests, RequestState.REJECTED);
             }
         }
@@ -115,6 +115,13 @@ class RequestServiceImpl implements RequestService {
         }
         request.setStatus(RequestState.CANCELED);
         return RequestMapper.mapToRequestDto(requestRepository.save(request));
+    }
+
+    @Override
+    public List<RequestStats> getConfirmedRequestStats(final Set<Long> eventIds) {
+        return requestRepository.getRequestStats(eventIds, RequestState.CONFIRMED).stream()
+                .map(stats -> new RequestStats(stats.getId(), stats.getRequests()))
+                .toList();
     }
 
     private void requireUserExists(final long userId) {

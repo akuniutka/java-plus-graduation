@@ -3,9 +3,7 @@ package ru.practicum.ewm.compilation;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import ru.practicum.ewm.event.Event;
+import ru.practicum.ewm.event.dto.EventShortDto;
 
 import java.util.Set;
 
@@ -18,14 +16,13 @@ public class Compilation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @Fetch(FetchMode.SUBSELECT)
-    @JoinTable(
-            name = "compilation_event",
-            joinColumns = @JoinColumn(name = "compilation_id"),
-            inverseJoinColumns = @JoinColumn(name = "event_id")
-    )
-    private Set<Event> events;
+    @ElementCollection
+    @CollectionTable(name = "compilations_events", joinColumns = @JoinColumn(name = "compilation_id"))
+    @Column(name = "event_id")
+    private Set<Long> eventIds;
+
+    @Transient
+    private Set<EventShortDto> events;
 
     @Column(name = "pinned", nullable = false)
     private Boolean pinned;

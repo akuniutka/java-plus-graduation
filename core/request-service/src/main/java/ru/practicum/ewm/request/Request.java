@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.CreationTimestamp;
-import ru.practicum.ewm.event.Event;
 
 import java.time.LocalDateTime;
 
@@ -17,11 +16,10 @@ public class Request {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
     @NotNull
-    Event event;
+    private Long eventId;
 
     @CreationTimestamp
     private LocalDateTime created;

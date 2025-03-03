@@ -11,6 +11,14 @@ spring:
           uri: lb://user-service
           predicates:
             - Path=/admin/users/**
+        - id: requests-service_route
+          uri: lb://ewm-main-service
+          predicates:
+            - Path=/users/*/events/*/requests/**
+        - id: event-service_route
+          uri: lb://event-service
+          predicates:
+            - Path=/admin/events/**, /users/*/events/**, /events/**, /categories/**, /admin/categories/**
         - id: ewm-main-service_route
           uri: lb://ewm-main-service
           predicates:

@@ -1,25 +1,24 @@
 package ru.practicum.ewm.subscription;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.common.HttpRequestResponseLogger;
-import ru.practicum.ewm.event.EventFilter;
-import ru.practicum.ewm.event.EventShortDto;
-import ru.practicum.ewm.event.EventSort;
-import ru.practicum.ewm.event.EventState;
+import ru.practicum.ewm.event.dto.EventShortDto;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
 @RequestMapping("/users/{userId}/subscriptions")
 @RequiredArgsConstructor
 public class SubscriptionPrivateController extends HttpRequestResponseLogger {
+
+    private static final boolean DEFAULT_ONLY_AVAILABLE = false;
+    private static final int DEFAULT_PAGE_FROM = 0;
+    private static final int DEFAULT_PAGE_SIZE = 10;
+
     private final SubscriptionService subscriptionService;
 
     @PostMapping
@@ -34,29 +33,10 @@ public class SubscriptionPrivateController extends HttpRequestResponseLogger {
     @GetMapping
     public List<EventShortDto> getEvents(
             @PathVariable final long userId,
-            @RequestParam(required = false) final String text,
-            @RequestParam(required = false) final List<Long> categories,
-            @RequestParam(required = false) final Boolean paid,
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") final LocalDateTime rangeStart,
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") final LocalDateTime rangeEnd,
-            @RequestParam(defaultValue = "false") final boolean onlyAvailable,
-            @RequestParam(required = false) final EventSort sort,
-            @RequestParam(defaultValue = "0") @PositiveOrZero final int from,
-            @RequestParam(defaultValue = "10") @Positive final int size,
+            @Valid final EventFilter filter,
             final HttpServletRequest request) {
-        final EventFilter filter = EventFilter.builder()
-                .states(List.of(EventState.PUBLISHED))
-                .text(text)
-                .categories(categories)
-                .paid(paid)
-                .rangeStart(rangeStart)
-                .rangeEnd(rangeEnd)
-                .onlyAvailable(onlyAvailable)
-                .sort(sort)
-                .from(from)
-                .size(size)
-                .build();
-        final List<EventShortDto> dtos = subscriptionService.getEvents(userId, filter);
+        final EventFilter filterWithDefaults = withDefaults(filter);
+        final List<EventShortDto> dtos = subscriptionService.getEvents(userId, filterWithDefaults);
         logHttpResponse(request, dtos);
         return dtos;
     }
@@ -69,5 +49,13 @@ public class SubscriptionPrivateController extends HttpRequestResponseLogger {
         logHttpRequest(request);
         subscriptionService.unsubscribe(userId, initiatorId);
         logHttpResponse(request);
+    }
+
+    private EventFilter withDefaults(final EventFilter filter) {
+        return filter.toBuilder()
+                .onlyAvailable(filter.onlyAvailable() == null ? DEFAULT_ONLY_AVAILABLE : filter.onlyAvailable())
+                .from(filter.from() == null ? DEFAULT_PAGE_FROM : filter.from())
+                .size(filter.size() == null ? DEFAULT_PAGE_SIZE : filter.size())
+                .build();
     }
 }
