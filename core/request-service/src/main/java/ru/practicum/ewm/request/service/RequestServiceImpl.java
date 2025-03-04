@@ -1,4 +1,4 @@
-package ru.practicum.ewm.request;
+package ru.practicum.ewm.request.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -7,7 +7,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import ru.practicum.ewm.event.client.EventClient;
 import ru.practicum.ewm.event.dto.EventFullDto;
+import ru.practicum.ewm.request.dto.EventRequestStatusDto;
+import ru.practicum.ewm.request.dto.RequestDto;
 import ru.practicum.ewm.request.dto.RequestStats;
+import ru.practicum.ewm.request.dto.UpdateEventRequestStatusDto;
+import ru.practicum.ewm.request.mapper.RequestMapper;
+import ru.practicum.ewm.request.model.Request;
+import ru.practicum.ewm.request.model.RequestState;
+import ru.practicum.ewm.request.repository.RequestRepository;
 import ru.practicum.ewm.user.client.UserClient;
 import ru.practicum.ewm.event.model.EventState;
 import ru.practicum.ewm.exception.NotFoundException;

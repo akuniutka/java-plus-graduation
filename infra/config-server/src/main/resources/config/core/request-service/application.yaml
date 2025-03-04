@@ -1,0 +1,21 @@
+spring:
+  main:
+    banner-mode: off
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://requests-db:5432/requests
+    username: root
+    password: root
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+  sql:
+    init:
+      mode: always
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
+server:
+  port: 0

@@ -1,20 +1,23 @@
-package ru.practicum.ewm.request;
+package ru.practicum.ewm.request.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.common.HttpRequestResponseLogger;
+import ru.practicum.ewm.request.service.RequestService;
+import ru.practicum.ewm.request.dto.RequestDto;
+
 import java.util.Collection;
 
 @RestController
 @RequestMapping("/users/{userId}/requests")
 @RequiredArgsConstructor
-public class RequestController extends HttpRequestResponseLogger {
+public class PublicRequestController extends HttpRequestResponseLogger {
     private final RequestService requestService;
 
     @GetMapping
-    Collection<RequestDto> get(@PathVariable final long userId, final HttpServletRequest httpRequest) {
+    public Collection<RequestDto> get(@PathVariable final long userId, final HttpServletRequest httpRequest) {
         logHttpRequest(httpRequest);
         Collection<RequestDto> response = requestService.getAllRequestByUserId(userId);
         logHttpResponse(httpRequest, response);
@@ -23,7 +26,7 @@ public class RequestController extends HttpRequestResponseLogger {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    RequestDto save(@PathVariable final long userId, @RequestParam long eventId, final HttpServletRequest httpRequest) {
+    public RequestDto save(@PathVariable final long userId, @RequestParam long eventId, final HttpServletRequest httpRequest) {
         logHttpRequest(httpRequest);
         final RequestDto requestDto = requestService.create(userId, eventId);
         logHttpResponse(httpRequest, requestDto);
@@ -31,7 +34,7 @@ public class RequestController extends HttpRequestResponseLogger {
     }
 
     @PatchMapping("/{requestId}/cancel")
-    RequestDto delete(@PathVariable final long userId, @PathVariable long requestId, final HttpServletRequest request) {
+    public RequestDto delete(@PathVariable final long userId, @PathVariable long requestId, final HttpServletRequest request) {
         logHttpRequest(request);
         RequestDto requestDto = requestService.cancel(userId, requestId);
         logHttpResponse(request, requestDto);
