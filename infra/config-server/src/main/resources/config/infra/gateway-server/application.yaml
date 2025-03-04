@@ -19,9 +19,9 @@ spring:
           uri: lb://event-service
           predicates:
             - Path=/admin/events/**, /users/*/events/**, /events/**, /categories/**, /admin/categories/**
-        - id: ewm-main-service_route
-          uri: lb://ewm-main-service
+        - id: extra-services_route
+          uri: lb://extra-services
           predicates:
-            - Path=/**
+            - Path=/admin/compilations/**, /compilations/**, /users/*/subscriptions/**
 server:
   port: 8080

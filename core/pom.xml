@@ -12,15 +12,14 @@
     <artifactId>explore-with-me-core</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>main-service</module>
-        <module>user-service</module>
         <module>main-service-common</module>
+        <module>user-service-api</module>
+        <module>user-service</module>
+        <module>event-service-api</module>
         <module>event-service</module>
+        <module>request-service-api</module>
         <module>request-service</module>
         <module>extra-services</module>
-        <module>user-service-api</module>
-        <module>request-service-api</module>
-        <module>event-service-api</module>
     </modules>
 
 </project>
