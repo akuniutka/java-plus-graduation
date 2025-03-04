@@ -3,7 +3,7 @@ spring:
     banner-mode: off
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://events-db:5432/events
+    url: jdbc:postgresql://extra-services-db:5432/extra_services
     username: root
     password: root
   jpa:
@@ -31,16 +31,5 @@ resilience4j:
         slidingWindowsType: COUNT_BASED
         minimumNumberOfCalls: 5
         automaticTransitionFromOpenToHalfOpenEnabled: true
-      ewm-stats-server:
-        slidingWindowSize: 10
-        waitDurationInOpenState: 10000
-        permittedNumberOfCallsInHalfOpenState: 3
-        slidingWindowsType: COUNT_BASED
-        minimumNumberOfCalls: 5
-        automaticTransitionFromOpenToHalfOpenEnabled: true
-ewm:
-  timeout:
-    admin: PT1H
-    user: PT2H
 server:
   port: 0

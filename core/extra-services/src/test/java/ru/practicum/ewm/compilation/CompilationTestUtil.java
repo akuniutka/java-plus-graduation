@@ -1,5 +1,9 @@
 package ru.practicum.ewm.compilation;
 
+import ru.practicum.ewm.compilation.dto.CompilationDto;
+import ru.practicum.ewm.compilation.dto.NewCompilationDto;
+import ru.practicum.ewm.compilation.dto.UpdateCompilationRequest;
+
 import java.util.Set;
 
 import static ru.practicum.ewm.event.EventTestUtil.EVENT_ID_1;
