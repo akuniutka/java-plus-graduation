@@ -1,8 +1,11 @@
-package ru.practicum.ewm.request;
+package ru.practicum.ewm.request.service;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import ru.practicum.ewm.request.dto.EventRequestStatusDto;
+import ru.practicum.ewm.request.dto.RequestDto;
 import ru.practicum.ewm.request.dto.RequestStats;
+import ru.practicum.ewm.request.dto.UpdateEventRequestStatusDto;
 
 import java.util.List;
 import java.util.Set;

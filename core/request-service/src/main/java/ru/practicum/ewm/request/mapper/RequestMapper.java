@@ -1,4 +1,7 @@
-package ru.practicum.ewm.request;
+package ru.practicum.ewm.request.mapper;
+
+import ru.practicum.ewm.request.dto.RequestDto;
+import ru.practicum.ewm.request.model.Request;
 
 import java.util.List;
 

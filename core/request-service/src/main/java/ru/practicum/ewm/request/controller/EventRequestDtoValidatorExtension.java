@@ -1,12 +1,14 @@
-package ru.practicum.ewm.request;
+package ru.practicum.ewm.request.controller;
 
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
+import ru.practicum.ewm.request.model.RequestState;
+import ru.practicum.ewm.request.dto.UpdateEventRequestStatusDto;
 
 @Component
-class EventRequestDtoValidatorExtension implements Validator {
+public class EventRequestDtoValidatorExtension implements Validator {
 
     @Override
     public boolean supports(@NonNull final Class<?> clazz) {
