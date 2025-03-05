@@ -19,6 +19,11 @@ public class UserClientFallback implements UserClient {
     }
 
     @Override
+    public boolean existsById(final long id) {
+        return false;
+    }
+
+    @Override
     public UserShortDto getById(final long id) {
         return UserShortDto.builder()
                 .id(id)

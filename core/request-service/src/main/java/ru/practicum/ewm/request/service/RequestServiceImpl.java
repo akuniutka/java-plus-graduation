@@ -7,6 +7,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import ru.practicum.ewm.event.client.EventClient;
 import ru.practicum.ewm.event.dto.EventFullDto;
+import ru.practicum.ewm.event.model.EventState;
+import ru.practicum.ewm.exception.NotFoundException;
+import ru.practicum.ewm.exception.NotPossibleException;
 import ru.practicum.ewm.request.dto.EventRequestStatusDto;
 import ru.practicum.ewm.request.dto.RequestDto;
 import ru.practicum.ewm.request.dto.RequestStats;
@@ -16,10 +19,6 @@ import ru.practicum.ewm.request.model.Request;
 import ru.practicum.ewm.request.model.RequestState;
 import ru.practicum.ewm.request.repository.RequestRepository;
 import ru.practicum.ewm.user.client.UserClient;
-import ru.practicum.ewm.event.model.EventState;
-import ru.practicum.ewm.exception.NotFoundException;
-import ru.practicum.ewm.exception.NotPossibleException;
-import ru.practicum.ewm.user.dto.UserShortDto;
 
 import java.util.HashSet;
 import java.util.List;
@@ -132,10 +131,10 @@ class RequestServiceImpl implements RequestService {
     }
 
     private void requireUserExists(final long userId) {
-        final UserShortDto user = userClient.getById(userId);
-        if (user.name() == null) {
-            throw new NotFoundException("User", userId);
+        if (userClient.existsById(userId)) {
+            return;
         }
+        throw new NotFoundException("User", userId);
     }
 
     private void requireAllExist(final List<Long> ids, final List<Request> requests) {

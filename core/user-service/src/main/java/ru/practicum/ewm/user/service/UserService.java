@@ -12,6 +12,8 @@ public interface UserService {
 
     List<User> findAllByIdIn(Set<Long> ids);
 
+    boolean existsById(long id);
+
     User getById(long id);
 
     List<UserDto> findAll(Pageable pageable);

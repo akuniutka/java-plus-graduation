@@ -14,21 +14,20 @@ import ru.practicum.ewm.category.service.CategoryService;
 import ru.practicum.ewm.event.dto.AdminEventFilter;
 import ru.practicum.ewm.event.dto.InternalEventFilter;
 import ru.practicum.ewm.event.dto.PublicEventFilter;
+import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.model.EventPatch;
 import ru.practicum.ewm.event.model.EventState;
-import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.model.QEvent;
 import ru.practicum.ewm.event.repository.EventRepository;
-import ru.practicum.ewm.request.client.RequestClient;
-import ru.practicum.ewm.request.dto.RequestStats;
-import ru.practicum.ewm.stats.client.StatsClient;
-import ru.practicum.ewm.user.client.UserClient;
 import ru.practicum.ewm.exception.FieldValidationException;
 import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.exception.NotPossibleException;
 import ru.practicum.ewm.exception.ParameterValidationException;
+import ru.practicum.ewm.request.client.RequestClient;
+import ru.practicum.ewm.request.dto.RequestStats;
 import ru.practicum.ewm.stats.ViewStatsDto;
-import ru.practicum.ewm.user.dto.UserShortDto;
+import ru.practicum.ewm.stats.client.StatsClient;
+import ru.practicum.ewm.user.client.UserClient;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -187,7 +186,7 @@ public class EventServiceImpl implements EventService {
 
         if (filter.onlyAvailable()) {
             events.removeIf(foundEvent -> foundEvent.getParticipantLimit() > 0L
-            && foundEvent.getParticipantLimit() - foundEvent.getConfirmedRequests() > 0L);
+                    && foundEvent.getParticipantLimit() - foundEvent.getConfirmedRequests() > 0L);
         }
 
         if (filter.sort() == PublicEventFilter.Sort.EVENT_DATE) {
@@ -341,10 +340,10 @@ public class EventServiceImpl implements EventService {
     }
 
     private void requireUserExist(final long userId) {
-        final UserShortDto user = userClient.getById(userId);
-        if (user.name() == null) {
-            throw new NotFoundException("User", userId);
+        if (userClient.existsById(userId)) {
+            return;
         }
+        throw new NotFoundException("User", userId);
     }
 
     private Category fetchCategory(final Category category) {

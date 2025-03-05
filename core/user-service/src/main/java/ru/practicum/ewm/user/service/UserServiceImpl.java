@@ -30,6 +30,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public boolean existsById(final long id) {
+        return repository.existsById(id);
+    }
+
+    @Override
     public User getById(final long id) {
         return repository.findById(id).orElseThrow(() -> new NotFoundException(User.class, id));
     }

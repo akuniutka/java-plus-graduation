@@ -31,6 +31,14 @@ public class UserInternalController implements UserOperations {
     }
 
     @Override
+    public boolean existsById(final long id) {
+        log.info("Received request to check user existence: id = {}", id);
+        final boolean exists = service.existsById(id);
+        log.info("Responded to user existence check: id = {}, exists = {}", id, exists);
+        return exists;
+    }
+
+    @Override
     public UserShortDto getById(final long id) {
         log.info("Received request for user: id = {}", id);
         final User user = service.getById(id);
