@@ -7,14 +7,13 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.event.client.EventClient;
 import ru.practicum.ewm.event.dto.EventShortDto;
 import ru.practicum.ewm.event.dto.InternalEventFilter;
+import ru.practicum.ewm.exception.NotFoundException;
+import ru.practicum.ewm.exception.NotPossibleException;
 import ru.practicum.ewm.exception.ParameterValidationException;
 import ru.practicum.ewm.subscription.dto.EventFilter;
 import ru.practicum.ewm.subscription.model.Subscription;
 import ru.practicum.ewm.subscription.repository.SubscriptionRepository;
 import ru.practicum.ewm.user.client.UserClient;
-import ru.practicum.ewm.exception.NotFoundException;
-import ru.practicum.ewm.exception.NotPossibleException;
-import ru.practicum.ewm.user.dto.UserShortDto;
 
 import java.util.List;
 import java.util.Set;
@@ -88,10 +87,10 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     private void requireUserExist(final long userId) {
-        final UserShortDto user = userClient.getById(userId);
-        if (user.name() == null) {
-            throw new NotFoundException("User", userId);
+        if (userClient.existsById(userId)) {
+            return;
         }
+        throw new NotFoundException("User", userId);
     }
 
     private InternalEventFilter.Sort mapSort(final EventFilter.Sort sort) {
