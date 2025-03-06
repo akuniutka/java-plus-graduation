@@ -72,6 +72,7 @@ class RequestServiceImpl implements RequestService {
 
     @Override
     public List<RequestDto> getRequests(final long userId, final long eventId) {
+        // TODO Check existence and throw exception
         eventClient.getByIdAndInitiatorId(eventId, userId);
         return RequestMapper.mapToRequestDto(requestRepository.findAllByEventId(eventId));
     }
@@ -80,6 +81,7 @@ class RequestServiceImpl implements RequestService {
     @Transactional
     public EventRequestStatusDto processRequests(final long id, final UpdateEventRequestStatusDto dto,
             final long userId) {
+        // TODO Check existence and throw exception
         final EventFullDto event = eventClient.getByIdAndInitiatorId(id, userId);
         if (CollectionUtils.isEmpty(dto.requestIds())) {
             return new EventRequestStatusDto(List.of(), List.of());
@@ -93,7 +95,7 @@ class RequestServiceImpl implements RequestService {
         if (dto.status() == RequestState.REJECTED) {
             rejectedRequests = setStatusAndSaveAll(requests, RequestState.REJECTED);
         } else {
-            final long availableSlots = event.participantLimit() == 0
+            final long availableSlots = event.participantLimit() == 0L
                     ? Long.MAX_VALUE
                     : event.participantLimit() - event.confirmedRequests();
             if (requests.size() > availableSlots) {

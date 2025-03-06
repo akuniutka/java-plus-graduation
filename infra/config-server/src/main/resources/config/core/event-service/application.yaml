@@ -2,7 +2,6 @@ spring:
   main:
     banner-mode: off
   datasource:
-    driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://events-db:5432/events
     username: root
     password: root

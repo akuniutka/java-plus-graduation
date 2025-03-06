@@ -14,7 +14,7 @@ public class UserClientFallback implements UserClient {
     @Override
     public List<UserShortDto> findAllByIdIn(final Set<Long> ids) {
         return ids.stream()
-                .map(this::getById)
+                .map(this::stubUserDto)
                 .toList();
     }
 
@@ -23,8 +23,7 @@ public class UserClientFallback implements UserClient {
         return false;
     }
 
-    @Override
-    public UserShortDto getById(final long id) {
+    private UserShortDto stubUserDto(final long id) {
         return UserShortDto.builder()
                 .id(id)
                 .build();

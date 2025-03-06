@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.PublicEventFilter;
 import ru.practicum.ewm.event.mapper.EventMapper;
+import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.service.EventService;
 import ru.practicum.ewm.event.dto.EventShortDto;
 import ru.practicum.ewm.stats.client.StatsClient;
@@ -31,8 +32,8 @@ public class PublicEventController extends HttpRequestResponseLogger {
     private static final int DEFAULT_PAGE_FROM = 0;
     private static final int DEFAULT_PAGE_SIZE = 10;
 
-    private final EventService events;
-    private final EventMapper mapper;
+    private final EventService viewRichEventServiceFacade;
+    private final EventMapper eventMapper;
     private final StatsClient statsClient;
     private final Clock clock;
 
@@ -41,7 +42,8 @@ public class PublicEventController extends HttpRequestResponseLogger {
             @PathVariable final long eventId,
             final HttpServletRequest httpRequest) {
         logHttpRequest(httpRequest);
-        final EventFullDto dto = mapper.mapToFullDto(events.getPublishedById(eventId));
+        final Event event = viewRichEventServiceFacade.getPublishedById(eventId);
+        final EventFullDto dto = eventMapper.mapToFullDto(event);
         statsClient.saveHit(new EndpointHitDto(APP, httpRequest.getRequestURI(), httpRequest.getRemoteAddr(),
                 LocalDateTime.now(clock).truncatedTo(ChronoUnit.SECONDS)));
         logHttpResponse(httpRequest, dto);
@@ -54,7 +56,8 @@ public class PublicEventController extends HttpRequestResponseLogger {
             final HttpServletRequest httpRequest) {
         logHttpRequest(httpRequest);
         final PublicEventFilter filterWithDefaults = withDefaults(filter);
-        final List<EventShortDto> dtos = mapper.mapToDto(events.findAll(filterWithDefaults));
+        final List<Event> events = viewRichEventServiceFacade.findAll(filterWithDefaults);
+        final List<EventShortDto> dtos = eventMapper.mapToDto(events);
         statsClient.saveHit(new EndpointHitDto(APP, httpRequest.getRequestURI(), httpRequest.getRemoteAddr(),
                 LocalDateTime.now(clock).truncatedTo(ChronoUnit.SECONDS)));
         logHttpResponse(httpRequest, dtos);
