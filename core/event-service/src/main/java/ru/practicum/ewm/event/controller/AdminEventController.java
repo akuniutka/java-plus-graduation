@@ -15,6 +15,7 @@ import ru.practicum.ewm.common.HttpRequestResponseLogger;
 import ru.practicum.ewm.event.dto.AdminEventFilter;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.mapper.EventMapper;
+import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.model.EventPatch;
 import ru.practicum.ewm.event.service.EventService;
 import ru.practicum.ewm.event.dto.UpdateEventAdminRequest;
@@ -29,25 +30,13 @@ public class AdminEventController extends HttpRequestResponseLogger {
     private static final int DEFAULT_PAGE_FROM = 0;
     private static final int DEFAULT_PAGE_SIZE = 10;
 
-    private final EventService events;
-    private final EventMapper mapper;
+    private final EventService viewRichEventServiceFacade;
+    private final EventMapper eventMapper;
     private final EventDtoValidatorExtension eventDtoValidatorExtension;
 
     @InitBinder
     public void initBinder(final WebDataBinder binder) {
         binder.addValidators(eventDtoValidatorExtension);
-    }
-
-    @PatchMapping("/{eventId}")
-    public EventFullDto update(
-            @PathVariable final long eventId,
-            @RequestBody @Valid UpdateEventAdminRequest updateEventAdminRequest,
-            final HttpServletRequest httpRequest) {
-        logHttpRequest(httpRequest, updateEventAdminRequest);
-        final EventPatch patch = mapper.mapToPatch(updateEventAdminRequest);
-        final EventFullDto dto = mapper.mapToFullDto(events.update(eventId, patch));
-        logHttpResponse(httpRequest, dto);
-        return dto;
     }
 
     @GetMapping
@@ -56,9 +45,23 @@ public class AdminEventController extends HttpRequestResponseLogger {
             final HttpServletRequest httpRequest) {
         logHttpRequest(httpRequest);
         final AdminEventFilter filterWithDefaults = withDefaults(filter);
-        final List<EventFullDto> dtos = mapper.mapToFullDto(events.findAll(filterWithDefaults));
+        final List<Event> events = viewRichEventServiceFacade.findAll(filterWithDefaults);
+        final List<EventFullDto> dtos = eventMapper.mapToFullDto(events);
         logHttpResponse(httpRequest, dtos);
         return dtos;
+    }
+
+    @PatchMapping("/{eventId}")
+    public EventFullDto update(
+            @PathVariable final long eventId,
+            @RequestBody @Valid UpdateEventAdminRequest updateEventAdminRequest,
+            final HttpServletRequest httpRequest) {
+        logHttpRequest(httpRequest, updateEventAdminRequest);
+        final EventPatch patch = eventMapper.mapToPatch(updateEventAdminRequest);
+        final Event event = viewRichEventServiceFacade.update(eventId, patch);
+        final EventFullDto dto = eventMapper.mapToFullDto(event);
+        logHttpResponse(httpRequest, dto);
+        return dto;
     }
 
     private AdminEventFilter withDefaults(final AdminEventFilter filter) {

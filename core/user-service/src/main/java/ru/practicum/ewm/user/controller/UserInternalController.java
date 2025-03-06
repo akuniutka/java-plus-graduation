@@ -37,14 +37,4 @@ public class UserInternalController implements UserOperations {
         log.info("Responded to user existence check: id = {}, exists = {}", id, exists);
         return exists;
     }
-
-    @Override
-    public UserShortDto getById(final long id) {
-        log.info("Received request for user: id = {}", id);
-        final User user = service.getById(id);
-        final UserShortDto dto = mapper.mapToShortDto(user);
-        log.info("Responded with requested user: id = {}", id);
-        log.debug("Requested user = {}", dto);
-        return dto;
-    }
 }

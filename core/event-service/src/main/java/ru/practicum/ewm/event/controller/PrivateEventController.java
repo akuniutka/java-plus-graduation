@@ -39,8 +39,8 @@ public class PrivateEventController extends HttpRequestResponseLogger {
 
     private static final Sort DEFAULT_SORT = Sort.by("id");
 
-    private final EventService events;
-    private final EventMapper mapper;
+    private final EventService viewRichEventServiceFacade;
+    private final EventMapper eventMapper;
     private final EventDtoValidatorExtension eventDtoValidatorExtension;
 
     @InitBinder
@@ -55,34 +55,37 @@ public class PrivateEventController extends HttpRequestResponseLogger {
             @RequestBody @Valid final NewEventDto newEventDto,
             final HttpServletRequest httpRequest) {
         logHttpRequest(httpRequest, newEventDto);
-        final Event event = mapper.mapToEvent(userId, newEventDto);
-        final EventFullDto dto = mapper.mapToFullDto(events.add(event));
-        logHttpResponse(httpRequest, dto);
-        return dto;
-    }
-
-    @GetMapping("/{eventId}")
-    public EventFullDto get(
-            @PathVariable final long userId,
-            @PathVariable final long eventId,
-            final HttpServletRequest httpRequest) {
-        logHttpRequest(httpRequest);
-        final EventFullDto dto = mapper.mapToFullDto(events.getByIdAndUserId(eventId, userId));
+        Event event = eventMapper.mapToEvent(userId, newEventDto);
+        event = viewRichEventServiceFacade.add(event);
+        final EventFullDto dto = eventMapper.mapToFullDto(event);
         logHttpResponse(httpRequest, dto);
         return dto;
     }
 
     @GetMapping
-    public List<EventShortDto> get(
+    public List<EventShortDto> findAllByInitiatorId(
             @PathVariable final long userId,
             @RequestParam(defaultValue = "0") @PositiveOrZero final int from,
             @RequestParam(defaultValue = "10") @Positive final int size,
             final HttpServletRequest httpRequest) {
         logHttpRequest(httpRequest);
         final Pageable pageable = PageRequest.of(from / size, size, DEFAULT_SORT);
-        final List<EventShortDto> dtos = mapper.mapToDto(events.findAllByInitiatorId(userId, pageable));
+        final List<Event> events = viewRichEventServiceFacade.findAllByInitiatorId(userId, pageable);
+        final List<EventShortDto> dtos = eventMapper.mapToDto(events);
         logHttpResponse(httpRequest, dtos);
         return dtos;
+    }
+
+    @GetMapping("/{eventId}")
+    public EventFullDto getByIdAndInitiatorId(
+            @PathVariable final long userId,
+            @PathVariable final long eventId,
+            final HttpServletRequest httpRequest) {
+        logHttpRequest(httpRequest);
+        final Event event = viewRichEventServiceFacade.getByIdAndInitiatorId(eventId, userId);
+        final EventFullDto dto = eventMapper.mapToFullDto(event);
+        logHttpResponse(httpRequest, dto);
+        return dto;
     }
 
     @PatchMapping("/{eventId}")
@@ -92,8 +95,9 @@ public class PrivateEventController extends HttpRequestResponseLogger {
             @RequestBody @Valid final UpdateEventUserRequest updateEventUserRequest,
             final HttpServletRequest httpRequest) {
         logHttpRequest(httpRequest, updateEventUserRequest);
-        final EventPatch patch = mapper.mapToPatch(updateEventUserRequest);
-        final EventFullDto dto = mapper.mapToFullDto(events.update(eventId, patch, userId));
+        final EventPatch patch = eventMapper.mapToPatch(updateEventUserRequest);
+        final Event event = viewRichEventServiceFacade.update(eventId, patch, userId);
+        final EventFullDto dto = eventMapper.mapToFullDto(event);
         logHttpResponse(httpRequest, dto);
         return dto;
     }

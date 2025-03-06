@@ -19,34 +19,36 @@ import java.util.List;
 @Slf4j
 public class InternalEventController implements EventOperations {
 
-    private final EventService service;
-    private final EventMapper mapper;
+    private final EventService viewRichEventServiceFacade;
+    private final EventMapper eventMapper;
 
     @Override
     public List<EventShortDto> findAll(final InternalEventFilter filter) {
         log.info("Received request for events: filter = {}", filter);
-        final List<Event> events = service.findAll(filter);
-        final List<EventShortDto> dtos = mapper.mapToDto(events);
+        final List<Event> events = viewRichEventServiceFacade.findAll(filter);
+        final List<EventShortDto> dtos = eventMapper.mapToDto(events);
         log.info("Responded with requested events: filter = {}", filter);
         log.debug("Requested events = {}", dtos);
         return dtos;
     }
 
+    // TODO Look if replace with getByIdAndInitiatorIdNot
     @Override
     public EventFullDto getById(@PathVariable final long id) {
         log.info("Received request for event: id = {}", id);
-        final Event event = service.getById(id);
-        final EventFullDto dto = mapper.mapToFullDto(event);
+        final Event event = viewRichEventServiceFacade.getById(id);
+        final EventFullDto dto = eventMapper.mapToFullDto(event);
         log.info("Responded with requested event: id = {}", id);
         log.debug("Requested event = {}", dto);
         return dto;
     }
 
+    // TODO Look if possible to filter by PUBLISHED
     @Override
     public EventFullDto getByIdAndInitiatorId(@PathVariable final long eventId, @PathVariable final long userId) {
         log.info("Received request for event: id = {}, initiatorId = {}", eventId, userId);
-        final Event event = service.getByIdAndUserId(eventId, userId);
-        final EventFullDto dto = mapper.mapToFullDto(event);
+        final Event event = viewRichEventServiceFacade.getByIdAndInitiatorId(eventId, userId);
+        final EventFullDto dto = eventMapper.mapToFullDto(event);
         log.info("Responded with requested event: id = {}, initiatorId = {}", eventId, userId);
         log.debug("Requested initiator's event = {}", dto);
         return dto;
