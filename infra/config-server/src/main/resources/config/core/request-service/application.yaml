@@ -2,7 +2,6 @@ spring:
   main:
     banner-mode: off
   datasource:
-    driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://requests-db:5432/requests
     username: root
     password: root

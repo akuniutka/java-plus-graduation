@@ -38,11 +38,11 @@ public class PublicEventController extends HttpRequestResponseLogger {
     private final Clock clock;
 
     @GetMapping("/{eventId}")
-    public EventFullDto get(
+    public EventFullDto getByIdAndPublished(
             @PathVariable final long eventId,
             final HttpServletRequest httpRequest) {
         logHttpRequest(httpRequest);
-        final Event event = viewRichEventServiceFacade.getPublishedById(eventId);
+        final Event event = viewRichEventServiceFacade.getByIdAndPublished(eventId);
         final EventFullDto dto = eventMapper.mapToFullDto(event);
         statsClient.saveHit(new EndpointHitDto(APP, httpRequest.getRequestURI(), httpRequest.getRemoteAddr(),
                 LocalDateTime.now(clock).truncatedTo(ChronoUnit.SECONDS)));
@@ -57,7 +57,7 @@ public class PublicEventController extends HttpRequestResponseLogger {
         logHttpRequest(httpRequest);
         final PublicEventFilter filterWithDefaults = withDefaults(filter);
         final List<Event> events = viewRichEventServiceFacade.findAll(filterWithDefaults);
-        final List<EventShortDto> dtos = eventMapper.mapToDto(events);
+        final List<EventShortDto> dtos = eventMapper.mapToShortDto(events);
         statsClient.saveHit(new EndpointHitDto(APP, httpRequest.getRequestURI(), httpRequest.getRemoteAddr(),
                 LocalDateTime.now(clock).truncatedTo(ChronoUnit.SECONDS)));
         logHttpResponse(httpRequest, dtos);

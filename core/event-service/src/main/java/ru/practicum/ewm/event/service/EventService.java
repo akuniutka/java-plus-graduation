@@ -22,9 +22,13 @@ public interface EventService {
 
     List<Event> findAll(@NotNull PublicEventFilter filter);
 
+    boolean existsById(long id);
+
+    boolean existsByIdAndInitiatorId(long id, long initiatorId);
+
     Event getById(long id);
 
-    Event getPublishedById(long id);
+    Event getByIdAndPublished(long id);
 
     Event getByIdAndInitiatorId(long id, long initiatorId);
 

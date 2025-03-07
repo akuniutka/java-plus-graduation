@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.ewm.event.client.EventOperations;
-import ru.practicum.ewm.event.dto.EventFullDto;
+import ru.practicum.ewm.event.dto.EventCondensedDto;
 import ru.practicum.ewm.event.dto.EventShortDto;
 import ru.practicum.ewm.event.dto.InternalEventFilter;
 import ru.practicum.ewm.event.mapper.EventMapper;
@@ -20,35 +20,50 @@ import java.util.List;
 public class InternalEventController implements EventOperations {
 
     private final EventService viewRichEventServiceFacade;
+    private final EventService simpleEventService;
     private final EventMapper eventMapper;
 
     @Override
     public List<EventShortDto> findAll(final InternalEventFilter filter) {
         log.info("Received request for events: filter = {}", filter);
         final List<Event> events = viewRichEventServiceFacade.findAll(filter);
-        final List<EventShortDto> dtos = eventMapper.mapToDto(events);
+        final List<EventShortDto> dtos = eventMapper.mapToShortDto(events);
         log.info("Responded with requested events: filter = {}", filter);
         log.debug("Requested events = {}", dtos);
         return dtos;
     }
 
-    // TODO Look if replace with getByIdAndInitiatorIdNot
     @Override
-    public EventFullDto getById(@PathVariable final long id) {
+    public boolean existsById(final long id) {
+        log.info("Received request to check event existence: id = {}", id);
+        final boolean exists = simpleEventService.existsById(id);
+        log.info("Responded to event existence check: id = {}, exists = {}", id, exists);
+        return exists;
+    }
+
+    @Override
+    public boolean existsByIdAndInitiatorId(final long id, final long initiatorId) {
+        log.info("Received request to check event existence: id = {}, initiatorId = {}", id, initiatorId);
+        final boolean exists = simpleEventService.existsByIdAndInitiatorId(id, initiatorId);
+        log.info("Responded to event existence check: id = {}, initiatorId = {}, exists = {}", id, initiatorId, exists);
+        return exists;
+    }
+
+    @Override
+    public EventCondensedDto getById(@PathVariable final long id) {
         log.info("Received request for event: id = {}", id);
-        final Event event = viewRichEventServiceFacade.getById(id);
-        final EventFullDto dto = eventMapper.mapToFullDto(event);
+        final Event event = simpleEventService.getById(id);
+        final EventCondensedDto dto = eventMapper.mapToCondensedDto(event);
         log.info("Responded with requested event: id = {}", id);
         log.debug("Requested event = {}", dto);
         return dto;
     }
 
-    // TODO Look if possible to filter by PUBLISHED
     @Override
-    public EventFullDto getByIdAndInitiatorId(@PathVariable final long eventId, @PathVariable final long userId) {
+    public EventCondensedDto getByIdAndInitiatorId(@PathVariable final long eventId, @PathVariable final long userId) {
         log.info("Received request for event: id = {}, initiatorId = {}", eventId, userId);
-        final Event event = viewRichEventServiceFacade.getByIdAndInitiatorId(eventId, userId);
-        final EventFullDto dto = eventMapper.mapToFullDto(event);
+        final Event event = simpleEventService.getByIdAndInitiatorId(eventId, userId);
+        final EventCondensedDto dto = eventMapper.mapToCondensedDto(event);
         log.info("Responded with requested event: id = {}, initiatorId = {}", eventId, userId);
         log.debug("Requested initiator's event = {}", dto);
         return dto;
