@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -98,20 +99,13 @@ public class ViewRichEventServiceFacade implements EventService {
     }
 
     @Override
-    public boolean existsById(final long id) {
-        return service.existsById(id);
+    public Optional<Event> findById(final long id) {
+        return service.findById(id).map(this::fetchViews);
     }
 
     @Override
-    public boolean existsByIdAndInitiatorId(final long id, final long initiatorId) {
-        return service.existsByIdAndInitiatorId(id, initiatorId);
-    }
-
-    @Override
-    public Event getById(final long id) {
-        final Event event = service.getById(id);
-        fetchViews(event);
-        return event;
+    public Optional<Event> findByIdAndInitiatorId(long id, long initiatorId) {
+        return service.findByIdAndInitiatorId(id, initiatorId).map(this::fetchViews);
     }
 
     @Override
@@ -142,8 +136,9 @@ public class ViewRichEventServiceFacade implements EventService {
         return event;
     }
 
-    private void fetchViews(final Event event) {
+    private Event fetchViews(final Event event) {
         fetchViews(List.of(event));
+        return event;
     }
 
     private void fetchViews(final Collection<Event> events) {
