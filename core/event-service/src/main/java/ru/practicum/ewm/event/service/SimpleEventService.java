@@ -145,19 +145,13 @@ public class SimpleEventService implements EventService {
     }
 
     @Override
-    public boolean existsById(final long id) {
-        return repository.existsById(id);
+    public Optional<Event> findById(final long id) {
+        return repository.findById(id);
     }
 
     @Override
-    public boolean existsByIdAndInitiatorId(final long id, final long initiatorId) {
-        return repository.existsByIdAndInitiatorId(id, initiatorId);
-    }
-
-    @Override
-    public Event getById(final long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new NotFoundException(Event.class, id));
+    public Optional<Event> findByIdAndInitiatorId(final long id, final long initiatorId) {
+        return repository.findByIdAndInitiatorId(id, initiatorId);
     }
 
     @Override

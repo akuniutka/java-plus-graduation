@@ -38,14 +38,11 @@ class RequestServiceImpl implements RequestService {
     @Override
     public RequestDto create(long userId, long eventId) {
         requireUserExists(userId);
-        // Pre-check that event exists and published in order not to fire fallback
-        requireEventExists(eventId);
-
+        final EventCondensedDto event = getEventById(eventId);
         if (!repository.findAllByRequesterIdAndEventIdAndStatusNotLike(userId, eventId,
                 RequestState.CANCELED).isEmpty()) {
             throw new NotPossibleException("Request already exists");
         }
-        final EventCondensedDto event = eventClient.getById(eventId);
         if (userId == event.initiatorId()) {
             throw new NotPossibleException("User is initiator of event");
         }
@@ -77,7 +74,7 @@ class RequestServiceImpl implements RequestService {
 
     @Override
     public List<RequestDto> getRequests(final long initiatorId, final long eventId) {
-        requireEventExists(eventId, initiatorId);
+        getEventByIdAndInitiatorId(eventId, initiatorId);
         return RequestMapper.mapToRequestDto(repository.findAllByEventId(eventId));
     }
 
@@ -88,10 +85,7 @@ class RequestServiceImpl implements RequestService {
             final UpdateEventRequestStatusDto dto,
             final long initiatorId
     ) {
-        // Pre-check that event by initiator exists and published in order not to fire fallback
-        requireEventExists(eventId, initiatorId);
-
-        final EventCondensedDto event = eventClient.getByIdAndInitiatorId(eventId, initiatorId);
+        final EventCondensedDto event = getEventByIdAndInitiatorId(eventId, initiatorId);
         if (CollectionUtils.isEmpty(dto.requestIds())) {
             return new EventRequestStatusDto(List.of(), List.of());
         }
@@ -149,19 +143,17 @@ class RequestServiceImpl implements RequestService {
         throw new NotFoundException("User", userId);
     }
 
-    private void requireEventExists(final long eventId) {
-        if (eventClient.existsById(eventId)) {
-            return;
-        }
-        throw new EventNotFoundException("Event not found: eventId = %s".formatted(eventId));
+    private EventCondensedDto getEventById(final long eventId) {
+        return eventClient.findById(eventId).orElseThrow(
+                () -> new EventNotFoundException("Event not found: eventId = %s".formatted(eventId))
+        );
     }
 
-    private void requireEventExists(final long eventId, final long initiatorId) {
-        if (eventClient.existsByIdAndInitiatorId(eventId, initiatorId)) {
-            return;
-        }
-        throw new EventNotFoundException("Event not found: eventId = %s, initiatorId = %s"
-                .formatted(eventId, initiatorId));
+    private EventCondensedDto getEventByIdAndInitiatorId(final long eventId, final long initiatorId) {
+        return eventClient.findByIdAndInitiatorId(eventId, initiatorId).orElseThrow(
+                () -> new EventNotFoundException("Event not found: eventId = %s, initiatorId = %s"
+                        .formatted(eventId, initiatorId))
+        );
     }
 
     private void requireAllExist(final List<Long> ids, final List<Request> requests) {

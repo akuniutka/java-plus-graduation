@@ -9,6 +9,7 @@ import ru.practicum.ewm.event.model.EventPatch;
 import ru.practicum.ewm.event.model.Event;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface EventService {
 
@@ -22,11 +23,9 @@ public interface EventService {
 
     List<Event> findAll(@NotNull PublicEventFilter filter);
 
-    boolean existsById(long id);
+    Optional<Event> findById(long id);
 
-    boolean existsByIdAndInitiatorId(long id, long initiatorId);
-
-    Event getById(long id);
+    Optional<Event> findByIdAndInitiatorId(long id, long initiatorId);
 
     Event getByIdAndPublished(long id);
 

@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -115,20 +116,13 @@ public class RequestRichEventServiceFacade implements EventService {
     }
 
     @Override
-    public boolean existsById(final long id) {
-        return service.existsById(id);
+    public Optional<Event> findById(final long id) {
+        return service.findById(id).map(this::fetchConfirmedRequests);
     }
 
     @Override
-    public boolean existsByIdAndInitiatorId(final long id, final long initiatorId) {
-        return service.existsByIdAndInitiatorId(id, initiatorId);
-    }
-
-    @Override
-    public Event getById(final long id) {
-        final Event event = service.getById(id);
-        fetchConfirmedRequests(event);
-        return event;
+    public Optional<Event> findByIdAndInitiatorId(long id, long initiatorId) {
+        return service.findByIdAndInitiatorId(id, initiatorId).map(this::fetchConfirmedRequests);
     }
 
     @Override
@@ -159,8 +153,9 @@ public class RequestRichEventServiceFacade implements EventService {
         return event;
     }
 
-    private void fetchConfirmedRequests(final Event event) {
+    private Event fetchConfirmedRequests(final Event event) {
         fetchConfirmedRequests(List.of(event));
+        return event;
     }
 
     private void fetchConfirmedRequests(final Collection<Event> events) {
