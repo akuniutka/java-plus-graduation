@@ -13,6 +13,7 @@ public class UserClientFallback implements UserClient {
 
     @Override
     public List<UserShortDto> findAllByIdIn(final Set<Long> ids) {
+        log.warn("Cannot retrieve user data from user service: ids = {}", ids);
         return ids.stream()
                 .map(this::stubUserDto)
                 .toList();
@@ -20,6 +21,7 @@ public class UserClientFallback implements UserClient {
 
     @Override
     public boolean existsById(final long id) {
+        log.warn("Cannot check user existence with user service: id = {}", id);
         return false;
     }
 

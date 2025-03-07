@@ -9,6 +9,7 @@ public class UserClientFallback implements UserClient {
 
     @Override
     public boolean existsById(final long id) {
+        log.warn("Cannot check user existence with user service: id = {}", id);
         return false;
     }
 }
