@@ -6,8 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import ru.practicum.ewm.event.client.EventClient;
-import ru.practicum.ewm.event.dto.EventFullDto;
+import ru.practicum.ewm.event.dto.EventCondensedDto;
 import ru.practicum.ewm.event.model.EventState;
+import ru.practicum.ewm.exception.EventNotFoundException;
 import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.exception.NotPossibleException;
 import ru.practicum.ewm.request.dto.EventRequestStatusDto;
@@ -30,25 +31,29 @@ import java.util.stream.Collectors;
 @Slf4j
 class RequestServiceImpl implements RequestService {
 
-    private final RequestRepository requestRepository;
-    private final EventClient eventClient;
     private final UserClient userClient;
+    private final EventClient eventClient;
+    private final RequestRepository repository;
 
     @Override
     public RequestDto create(long userId, long eventId) {
-        if (!requestRepository.findAllByRequesterIdAndEventIdAndStatusNotLike(userId, eventId,
+        requireUserExists(userId);
+        // Pre-check that event exists and published in order not to fire fallback
+        requireEventExists(eventId);
+
+        if (!repository.findAllByRequesterIdAndEventIdAndStatusNotLike(userId, eventId,
                 RequestState.CANCELED).isEmpty()) {
             throw new NotPossibleException("Request already exists");
         }
-        requireUserExists(userId);
-        final EventFullDto event = eventClient.getById(eventId);
-        if (userId == event.initiator().id()) {
+        final EventCondensedDto event = eventClient.getById(eventId);
+        if (userId == event.initiatorId()) {
             throw new NotPossibleException("User is initiator of event");
         }
         if (!event.state().equals(EventState.PUBLISHED)) {
             throw new NotPossibleException("Event is not published");
         }
-        if (event.participantLimit() != 0 && event.confirmedRequests() >= event.participantLimit()) {
+        final long occupiedSlots = repository.findAllByEventIdAndStatus(eventId, RequestState.CONFIRMED).size();
+        if (event.participantLimit() != 0 && occupiedSlots >= event.participantLimit()) {
             throw new NotPossibleException("Request limit exceeded");
         }
         Request newRequest = new Request();
@@ -59,34 +64,38 @@ class RequestServiceImpl implements RequestService {
         } else {
             newRequest.setStatus(RequestState.CONFIRMED);
         }
-        return RequestMapper.mapToRequestDto(requestRepository.save(newRequest));
+        return RequestMapper.mapToRequestDto(repository.save(newRequest));
     }
 
     @Override
     public List<RequestDto> getAllRequestByUserId(final long userId) {
         requireUserExists(userId);
-        return requestRepository.findAllByRequesterId(userId).stream()
+        return repository.findAllByRequesterId(userId).stream()
                 .map(RequestMapper::mapToRequestDto)
                 .toList();
     }
 
     @Override
-    public List<RequestDto> getRequests(final long userId, final long eventId) {
-        // TODO Check existence and throw exception
-        eventClient.getByIdAndInitiatorId(eventId, userId);
-        return RequestMapper.mapToRequestDto(requestRepository.findAllByEventId(eventId));
+    public List<RequestDto> getRequests(final long initiatorId, final long eventId) {
+        requireEventExists(eventId, initiatorId);
+        return RequestMapper.mapToRequestDto(repository.findAllByEventId(eventId));
     }
 
     @Override
     @Transactional
-    public EventRequestStatusDto processRequests(final long id, final UpdateEventRequestStatusDto dto,
-            final long userId) {
-        // TODO Check existence and throw exception
-        final EventFullDto event = eventClient.getByIdAndInitiatorId(id, userId);
+    public EventRequestStatusDto processRequests(
+            final long eventId,
+            final UpdateEventRequestStatusDto dto,
+            final long initiatorId
+    ) {
+        // Pre-check that event by initiator exists and published in order not to fire fallback
+        requireEventExists(eventId, initiatorId);
+
+        final EventCondensedDto event = eventClient.getByIdAndInitiatorId(eventId, initiatorId);
         if (CollectionUtils.isEmpty(dto.requestIds())) {
             return new EventRequestStatusDto(List.of(), List.of());
         }
-        final List<Request> requests = requestRepository.findAllByEventIdAndIdIn(id, dto.requestIds());
+        final List<Request> requests = repository.findAllByEventIdAndIdIn(eventId, dto.requestIds());
         requireAllExist(dto.requestIds(), requests);
         requireAllHavePendingStatus(requests);
 
@@ -95,15 +104,16 @@ class RequestServiceImpl implements RequestService {
         if (dto.status() == RequestState.REJECTED) {
             rejectedRequests = setStatusAndSaveAll(requests, RequestState.REJECTED);
         } else {
+            final long occupiedSlots = repository.findAllByEventIdAndStatus(eventId, RequestState.CONFIRMED).size();
             final long availableSlots = event.participantLimit() == 0L
                     ? Long.MAX_VALUE
-                    : event.participantLimit() - event.confirmedRequests();
+                    : event.participantLimit() - occupiedSlots;
             if (requests.size() > availableSlots) {
                 throw new NotPossibleException("Not enough available participation slots");
             }
             confirmedRequests = setStatusAndSaveAll(requests, RequestState.CONFIRMED);
             if (requests.size() == availableSlots) {
-                final List<Request> pendingRequests = requestRepository.findAllByEventIdAndStatus(id,
+                final List<Request> pendingRequests = repository.findAllByEventIdAndStatus(eventId,
                         RequestState.PENDING);
                 rejectedRequests = setStatusAndSaveAll(pendingRequests, RequestState.REJECTED);
             }
@@ -116,18 +126,18 @@ class RequestServiceImpl implements RequestService {
     @Transactional
     public RequestDto cancel(final long userId, final long requestId) {
         requireUserExists(userId);
-        Request request = requestRepository.findById(requestId)
+        Request request = repository.findById(requestId)
                 .orElseThrow(() -> new NotFoundException(Request.class, requestId));
         if (!request.getRequesterId().equals(userId)) {
             throw new NotPossibleException("Request is not by user");
         }
         request.setStatus(RequestState.CANCELED);
-        return RequestMapper.mapToRequestDto(requestRepository.save(request));
+        return RequestMapper.mapToRequestDto(repository.save(request));
     }
 
     @Override
     public List<RequestStats> getConfirmedRequestStats(final Set<Long> eventIds) {
-        return requestRepository.getRequestStats(eventIds, RequestState.CONFIRMED).stream()
+        return repository.getRequestStats(eventIds, RequestState.CONFIRMED).stream()
                 .map(stats -> new RequestStats(stats.getId(), stats.getRequests()))
                 .toList();
     }
@@ -137,6 +147,21 @@ class RequestServiceImpl implements RequestService {
             return;
         }
         throw new NotFoundException("User", userId);
+    }
+
+    private void requireEventExists(final long eventId) {
+        if (eventClient.existsById(eventId)) {
+            return;
+        }
+        throw new EventNotFoundException("Event not found: eventId = %s".formatted(eventId));
+    }
+
+    private void requireEventExists(final long eventId, final long initiatorId) {
+        if (eventClient.existsByIdAndInitiatorId(eventId, initiatorId)) {
+            return;
+        }
+        throw new EventNotFoundException("Event not found: eventId = %s, initiatorId = %s"
+                .formatted(eventId, initiatorId));
     }
 
     private void requireAllExist(final List<Long> ids, final List<Request> requests) {
@@ -172,7 +197,7 @@ class RequestServiceImpl implements RequestService {
             return List.of();
         }
         requests.forEach(request -> request.setStatus(status));
-        final List<Request> savedRequests = requestRepository.saveAll(requests);
+        final List<Request> savedRequests = repository.saveAll(requests);
         log.info("{} set to status {}", savedRequests.size(), status);
         return savedRequests;
     }

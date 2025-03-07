@@ -145,20 +145,30 @@ public class SimpleEventService implements EventService {
     }
 
     @Override
+    public boolean existsById(final long id) {
+        return repository.existsById(id);
+    }
+
+    @Override
+    public boolean existsByIdAndInitiatorId(final long id, final long initiatorId) {
+        return repository.existsByIdAndInitiatorId(id, initiatorId);
+    }
+
+    @Override
     public Event getById(final long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new NotFoundException(Event.class, id));
     }
 
     @Override
-    public Event getPublishedById(long id) {
+    public Event getByIdAndPublished(final long id) {
         return repository.findByIdAndState(id, EventState.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException(Event.class, id));
     }
 
     @Override
-    public Event getByIdAndInitiatorId(final long id, final long userId) {
-        return repository.findByIdAndInitiatorId(id, userId)
+    public Event getByIdAndInitiatorId(final long id, final long initiatorId) {
+        return repository.findByIdAndInitiatorId(id, initiatorId)
                 .orElseThrow(() -> new NotFoundException(Event.class, id));
     }
 
@@ -166,7 +176,8 @@ public class SimpleEventService implements EventService {
     @Transactional
     public Event update(final long id, final EventPatch patch) {
         validateEventDate(patch.eventDate(), adminTimeout);
-        final Event event = getById(id);
+        final Event event = repository.findById(id)
+                .orElseThrow(() -> new NotFoundException(Event.class, id));
         if (event.getState() != EventState.PENDING) {
             throw new NotPossibleException("Event must be in state PENDING");
         }

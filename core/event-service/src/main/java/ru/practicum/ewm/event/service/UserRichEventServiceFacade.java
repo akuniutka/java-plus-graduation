@@ -67,6 +67,16 @@ public class UserRichEventServiceFacade implements EventService {
     }
 
     @Override
+    public boolean existsById(final long id) {
+        return service.existsById(id);
+    }
+
+    @Override
+    public boolean existsByIdAndInitiatorId(final long id, final long initiatorId) {
+        return service.existsByIdAndInitiatorId(id, initiatorId);
+    }
+
+    @Override
     public Event getById(final long id) {
         final Event event = service.getById(id);
         fetchUser(event);
@@ -74,8 +84,8 @@ public class UserRichEventServiceFacade implements EventService {
     }
 
     @Override
-    public Event getPublishedById(final long id) {
-        final Event event = service.getPublishedById(id);
+    public Event getByIdAndPublished(final long id) {
+        final Event event = service.getByIdAndPublished(id);
         fetchUser(event);
         return event;
     }

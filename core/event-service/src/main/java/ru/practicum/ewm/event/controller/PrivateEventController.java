@@ -71,7 +71,7 @@ public class PrivateEventController extends HttpRequestResponseLogger {
         logHttpRequest(httpRequest);
         final Pageable pageable = PageRequest.of(from / size, size, DEFAULT_SORT);
         final List<Event> events = viewRichEventServiceFacade.findAllByInitiatorId(userId, pageable);
-        final List<EventShortDto> dtos = eventMapper.mapToDto(events);
+        final List<EventShortDto> dtos = eventMapper.mapToShortDto(events);
         logHttpResponse(httpRequest, dtos);
         return dtos;
     }

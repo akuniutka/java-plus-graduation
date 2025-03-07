@@ -3,6 +3,7 @@ package ru.practicum.ewm.event.mapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.practicum.ewm.category.mapper.CategoryMapper;
+import ru.practicum.ewm.event.dto.EventCondensedDto;
 import ru.practicum.ewm.event.dto.LocationDto;
 import ru.practicum.ewm.event.model.EventPatch;
 import ru.practicum.ewm.event.dto.EventShortDto;
@@ -128,7 +129,7 @@ public class EventMapper {
                 .toList();
     }
 
-    public EventShortDto mapToDto(final Event event) {
+    public EventShortDto mapToShortDto(final Event event) {
         if (event == null) {
             return null;
         }
@@ -145,13 +146,26 @@ public class EventMapper {
                 .build();
     }
 
-    public List<EventShortDto> mapToDto(final List<Event> events) {
+    public List<EventShortDto> mapToShortDto(final List<Event> events) {
         if (events == null) {
             return null;
         }
         return events.stream()
-                .map(this::mapToDto)
+                .map(this::mapToShortDto)
                 .toList();
+    }
+
+    public EventCondensedDto mapToCondensedDto(final Event event) {
+        if (event == null) {
+            return null;
+        }
+        return EventCondensedDto.builder()
+                .id(event.getId())
+                .initiatorId(event.getInitiatorId())
+                .participantLimit(event.getParticipantLimit())
+                .requestModeration(event.isRequestModeration())
+                .state(event.getState())
+                .build();
     }
 
     private Location mapToLocation(final LocationDto dto) {
