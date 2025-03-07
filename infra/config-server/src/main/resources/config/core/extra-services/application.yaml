@@ -2,7 +2,6 @@ spring:
   main:
     banner-mode: off
   datasource:
-    driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://extra-services-db:5432/extra_services
     username: root
     password: root
@@ -25,6 +24,13 @@ resilience4j:
         failureRateThreshold: 50
     instances:
       user-service:
+        slidingWindowSize: 10
+        waitDurationInOpenState: 10000
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowsType: COUNT_BASED
+        minimumNumberOfCalls: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+      event-service:
         slidingWindowSize: 10
         waitDurationInOpenState: 10000
         permittedNumberOfCallsInHalfOpenState: 3

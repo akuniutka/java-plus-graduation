@@ -5,15 +5,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
 
-import java.time.Clock;
-
 @Configuration
-public class ExtraServicesAppConfig {
-
-    @Bean
-    Clock clock() {
-        return Clock.systemDefaultZone();
-    }
+public class StatsServerConfig {
 
     @Bean
     @Profile("dev")

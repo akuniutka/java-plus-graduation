@@ -6,7 +6,6 @@ import ru.practicum.ewm.stats.EndpointHitDto;
 import ru.practicum.ewm.stats.ViewStatsDto;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -23,6 +22,6 @@ public class StatsClientFallback implements StatsClient {
             final boolean unique) {
         log.warn("Cannot retrieve data from stats service: start={}, end={}, uris={}, unique={}", start, end, uris,
                 unique);
-        return Collections.emptyList();
+        return List.of();
     }
 }
