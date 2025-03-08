@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 public class ViewRichEventServiceFacade implements EventService {
 
     private static final Comparator<Event> SORT_BY_VIEWS = Comparator.comparing(Event::getViews);
-    // TODO Refactor
     private static final LocalDateTime VIEWS_FROM = LocalDateTime.of(1970, Month.JANUARY, 1, 0, 0, 0);
     private static final LocalDateTime VIEWS_TO = LocalDateTime.of(2100, Month.DECEMBER, 31, 23, 59, 59);
 

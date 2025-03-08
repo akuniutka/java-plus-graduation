@@ -36,6 +36,7 @@ public record NewEventDto(
         Long participantLimit,
 
         Boolean paid,
-        Boolean requestModeration) {
+        Boolean requestModeration
+) {
 
 }

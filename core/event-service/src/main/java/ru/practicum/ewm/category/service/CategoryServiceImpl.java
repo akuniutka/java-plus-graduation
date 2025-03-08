@@ -2,12 +2,9 @@ package ru.practicum.ewm.category.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.category.model.CategoryPatch;
 import ru.practicum.ewm.category.repository.CategoryRepository;
@@ -17,8 +14,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@Validated
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Slf4j
 public class CategoryServiceImpl implements CategoryService {
@@ -26,11 +21,16 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository repository;
 
     @Override
-    @Transactional
-    public Category add(final Category category) {
+    public Category save(final Category category) {
         final Category savedCategory = repository.save(category);
-        log.info("Added category with id = {}: {}", savedCategory.getId(), savedCategory);
+        log.info("Added new category: id = {}, name = {}", savedCategory.getId(), savedCategory.getName());
+        log.debug("Category added = {}", savedCategory);
         return savedCategory;
+    }
+
+    @Override
+    public List<Category> findAll(final Pageable pageable) {
+        return repository.findAll(pageable).getContent();
     }
 
     @Override
@@ -39,28 +39,24 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<Category> getAllInWindow(final int windowSize, final int windowIndex) {
-        final Pageable page = PageRequest.of(windowIndex, windowSize, Sort.by("id"));
-        return repository.findAll(page).getContent();
-    }
-
-    @Override
-    @Transactional
     public Category update(final long id, final CategoryPatch patch) {
         final Category category = getById(id);
-        Optional.ofNullable(patch.name()).ifPresent(category::setName);
+        applyPatch(category, patch);
         final Category savedCategory = repository.save(category);
-        log.info("Updated category with id = {}: {}", savedCategory.getId(), savedCategory);
+        log.info("Updated category: id = {}", savedCategory.getId());
+        log.debug("Updated category = {}", savedCategory);
         return savedCategory;
     }
 
     @Override
     @Transactional
-    public void removeById(final long id) {
+    public void deleteById(final long id) {
         if (repository.delete(id) == 1) {
-            log.info("Removed category with id = {}", id);
-        } else {
-            log.info("No category removed: category with id = {} does not exist", id);
+            log.info("Deleted category: id = {}", id);
         }
+    }
+
+    private void applyPatch(final Category category, final CategoryPatch patch) {
+        Optional.ofNullable(patch.name()).ifPresent(category::setName);
     }
 }

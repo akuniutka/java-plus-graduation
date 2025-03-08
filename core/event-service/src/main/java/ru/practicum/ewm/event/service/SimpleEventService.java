@@ -7,7 +7,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.category.service.CategoryService;
 import ru.practicum.ewm.event.dto.AdminEventFilter;
@@ -33,7 +32,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@Transactional(readOnly = true)
 @Slf4j
 public class SimpleEventService implements EventService {
 
@@ -64,13 +62,14 @@ public class SimpleEventService implements EventService {
     }
 
     @Override
-    @Transactional
     public Event add(final Event event) {
         validateEventDate(event.getEventDate(), userTimeout);
         requireUserExist(event.getInitiatorId());
         event.setCategory(fetchCategory(event.getCategory()));
         final Event savedEvent = repository.save(event);
-        log.info("Added event with id = {}: {}", savedEvent.getId(), savedEvent);
+        log.info("Added new event: id = {}, title = {}, eventDate = {}", savedEvent.getId(), savedEvent.getTitle(),
+                savedEvent.getEventDate());
+        log.debug("Event added = {}", savedEvent);
         return savedEvent;
     }
 
@@ -167,7 +166,6 @@ public class SimpleEventService implements EventService {
     }
 
     @Override
-    @Transactional
     public Event update(final long id, final EventPatch patch) {
         validateEventDate(patch.eventDate(), adminTimeout);
         final Event event = repository.findById(id)
@@ -180,7 +178,6 @@ public class SimpleEventService implements EventService {
     }
 
     @Override
-    @Transactional
     public Event update(final long id, final EventPatch patch, final long userId) {
         validateEventDate(patch.eventDate(), userTimeout);
         final Event event = getByIdAndInitiatorId(id, userId);
@@ -219,7 +216,8 @@ public class SimpleEventService implements EventService {
             event.setPublishedOn(now());
         }
         final Event savedEvent = repository.save(event);
-        log.info("updated event with id = {}: {}", savedEvent.getId(), savedEvent);
+        log.info("Updated event: id = {}, state = {}", savedEvent.getId(), savedEvent.getState());
+        log.debug("Updated event = {}", savedEvent);
         return savedEvent;
     }
 

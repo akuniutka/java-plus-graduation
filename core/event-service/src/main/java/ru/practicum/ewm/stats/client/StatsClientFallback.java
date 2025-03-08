@@ -20,8 +20,8 @@ public class StatsClientFallback implements StatsClient {
     @Override
     public List<ViewStatsDto> getStats(final LocalDateTime start, final LocalDateTime end, final List<String> uris,
             final boolean unique) {
-        log.warn("Cannot retrieve data from stats service: start={}, end={}, uris={}, unique={}", start, end, uris,
-                unique);
+        log.warn("Cannot retrieve data from stats service: start = {}, end = {}, uris = {}, unique = {}", start, end,
+                uris, unique);
         return List.of();
     }
 }

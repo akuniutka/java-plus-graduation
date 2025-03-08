@@ -7,6 +7,7 @@ public record CategoryUpdateDto(
 
         @NotBlankOrNull
         @Size(max = 50)
-        String name) {
+        String name
+) {
 
 }

@@ -38,13 +38,14 @@ public class UserAdminController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UserDto save(@RequestBody @Valid final NewUserRequest requestDto) {
+    public UserDto add(@RequestBody @Valid final NewUserRequest requestDto) {
         log.info("Received request to add new user: name = {}", requestDto.name());
+        log.debug("New user = {}", requestDto);
         User user = mapper.mapToUser(requestDto);
         user = service.save(user);
         final UserDto responseDto = mapper.mapToDto(user);
-        log.info("Responded with new user added: id = {}, name = {}", responseDto.id(), responseDto.name());
-        log.debug("New user added = {}", responseDto);
+        log.info("Responded with user added: id = {}, name = {}", responseDto.id(), responseDto.name());
+        log.debug("User added = {}", responseDto);
         return responseDto;
     }
 
