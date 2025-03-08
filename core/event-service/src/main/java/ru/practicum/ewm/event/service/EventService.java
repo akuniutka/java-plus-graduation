@@ -1,6 +1,5 @@
 package ru.practicum.ewm.event.service;
 
-import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Pageable;
 import ru.practicum.ewm.event.dto.AdminEventFilter;
 import ru.practicum.ewm.event.dto.InternalEventFilter;
@@ -13,15 +12,15 @@ import java.util.Optional;
 
 public interface EventService {
 
-    Event add(@NotNull Event event);
+    Event add(Event event);
 
     List<Event> findAllByInitiatorId(long initiatorId, Pageable pageable);
 
-    List<Event> findAll(@NotNull AdminEventFilter filter);
+    List<Event> findAll(AdminEventFilter filter);
 
-    List<Event> findAll(@NotNull InternalEventFilter filter);
+    List<Event> findAll(InternalEventFilter filter);
 
-    List<Event> findAll(@NotNull PublicEventFilter filter);
+    List<Event> findAll(PublicEventFilter filter);
 
     Optional<Event> findById(long id);
 
@@ -31,7 +30,7 @@ public interface EventService {
 
     Event getByIdAndInitiatorId(long id, long initiatorId);
 
-    Event update(long id, @NotNull EventPatch patch);
+    Event update(long id, EventPatch patch);
 
-    Event update(long id, @NotNull EventPatch patch, long userId);
+    Event update(long id, EventPatch patch, long userId);
 }

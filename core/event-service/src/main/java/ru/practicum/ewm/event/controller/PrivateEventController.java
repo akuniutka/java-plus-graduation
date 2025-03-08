@@ -1,10 +1,9 @@
 package ru.practicum.ewm.event.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -20,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.ewm.common.HttpRequestResponseLogger;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.mapper.EventMapper;
@@ -34,57 +32,66 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/users/{userId}/events")
-@RequiredArgsConstructor
-public class PrivateEventController extends HttpRequestResponseLogger {
+@Slf4j
+public class PrivateEventController {
 
     private static final Sort DEFAULT_SORT = Sort.by("id");
 
-    private final EventService viewRichEventServiceFacade;
-    private final EventMapper eventMapper;
-    private final EventDtoValidatorExtension eventDtoValidatorExtension;
+    private final EventService service;
+    private final EventMapper mapper;
+    private final EventDtoValidatorExtension validatorExtension;
+
+    public PrivateEventController(
+            final EventService viewRichEventServiceFacade,
+            final EventMapper mapper,
+            final EventDtoValidatorExtension validatorExtension
+    ) {
+        this.service = viewRichEventServiceFacade;
+        this.mapper = mapper;
+        this.validatorExtension = validatorExtension;
+    }
 
     @InitBinder
     public void initBinder(final WebDataBinder binder) {
-        binder.addValidators(eventDtoValidatorExtension);
+        binder.addValidators(validatorExtension);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public EventFullDto add(
-            @PathVariable final long userId,
-            @RequestBody @Valid final NewEventDto newEventDto,
-            final HttpServletRequest httpRequest) {
-        logHttpRequest(httpRequest, newEventDto);
-        Event event = eventMapper.mapToEvent(userId, newEventDto);
-        event = viewRichEventServiceFacade.add(event);
-        final EventFullDto dto = eventMapper.mapToFullDto(event);
-        logHttpResponse(httpRequest, dto);
-        return dto;
+    public EventFullDto add(@PathVariable final long userId, @RequestBody @Valid final NewEventDto dtoIn) {
+        log.info("Received request to add new event: title = {}, eventDate = {}", dtoIn.title(), dtoIn.eventDate());
+        log.debug("New event = {}", dtoIn);
+        Event event = mapper.mapToEvent(userId, dtoIn);
+        event = service.add(event);
+        final EventFullDto dtoOut = mapper.mapToFullDto(event);
+        log.info("Responded with event added: id = {}, title = {}, eventDate = {}", dtoOut.id(), dtoOut.title(),
+                dtoOut.eventDate());
+        log.debug("Event added = {}", dtoOut);
+        return dtoOut;
     }
 
     @GetMapping
     public List<EventShortDto> findAllByInitiatorId(
             @PathVariable final long userId,
             @RequestParam(defaultValue = "0") @PositiveOrZero final int from,
-            @RequestParam(defaultValue = "10") @Positive final int size,
-            final HttpServletRequest httpRequest) {
-        logHttpRequest(httpRequest);
+            @RequestParam(defaultValue = "10") @Positive final int size
+    ) {
+        log.info("Received request for events: initiatorId = {}, from = {}, size = {}", userId, from, size);
         final Pageable pageable = PageRequest.of(from / size, size, DEFAULT_SORT);
-        final List<Event> events = viewRichEventServiceFacade.findAllByInitiatorId(userId, pageable);
-        final List<EventShortDto> dtos = eventMapper.mapToShortDto(events);
-        logHttpResponse(httpRequest, dtos);
+        final List<Event> events = service.findAllByInitiatorId(userId, pageable);
+        final List<EventShortDto> dtos = mapper.mapToShortDto(events);
+        log.info("Responded with requested events: initiatorId = {}, from = {}, size = {}", userId, from, size);
+        log.debug("Requested events = {}", dtos);
         return dtos;
     }
 
     @GetMapping("/{eventId}")
-    public EventFullDto getByIdAndInitiatorId(
-            @PathVariable final long userId,
-            @PathVariable final long eventId,
-            final HttpServletRequest httpRequest) {
-        logHttpRequest(httpRequest);
-        final Event event = viewRichEventServiceFacade.getByIdAndInitiatorId(eventId, userId);
-        final EventFullDto dto = eventMapper.mapToFullDto(event);
-        logHttpResponse(httpRequest, dto);
+    public EventFullDto getByIdAndInitiatorId(@PathVariable final long userId, @PathVariable final long eventId) {
+        log.info("Received request for event: id = {}, initiatorId = {}", eventId, userId);
+        final Event event = service.getByIdAndInitiatorId(eventId, userId);
+        final EventFullDto dto = mapper.mapToFullDto(event);
+        log.info("Responded with requested event: id = {}, initiatorId = {}", dto.id(), dto.initiator().id());
+        log.debug("Requested event = {}", dto);
         return dto;
     }
 
@@ -92,13 +99,16 @@ public class PrivateEventController extends HttpRequestResponseLogger {
     public EventFullDto update(
             @PathVariable final long userId,
             @PathVariable final long eventId,
-            @RequestBody @Valid final UpdateEventUserRequest updateEventUserRequest,
-            final HttpServletRequest httpRequest) {
-        logHttpRequest(httpRequest, updateEventUserRequest);
-        final EventPatch patch = eventMapper.mapToPatch(updateEventUserRequest);
-        final Event event = viewRichEventServiceFacade.update(eventId, patch, userId);
-        final EventFullDto dto = eventMapper.mapToFullDto(event);
-        logHttpResponse(httpRequest, dto);
-        return dto;
+            @RequestBody @Valid final UpdateEventUserRequest dtoIn
+    ) {
+        log.info("Received request to update event: event id = {}, user id = {}, state action = {}", eventId, userId,
+                dtoIn.stateAction());
+        log.debug("Event patch = {}", dtoIn);
+        final EventPatch patch = mapper.mapToPatch(dtoIn);
+        final Event event = service.update(eventId, patch, userId);
+        final EventFullDto dtoOut = mapper.mapToFullDto(event);
+        log.info("Responded with updated event: id = {}, stat = {}", dtoOut.id(), dtoOut.state());
+        log.debug("Updated event = {}", dtoOut);
+        return dtoOut;
     }
 }

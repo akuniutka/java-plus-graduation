@@ -12,6 +12,7 @@ import java.util.List;
 @Component
 public class CategoryMapperImpl implements CategoryMapper {
 
+    @Override
     public Category mapToCategory(final CategoryCreateDto dto) {
         if (dto == null) {
             return null;
@@ -19,13 +20,6 @@ public class CategoryMapperImpl implements CategoryMapper {
         final Category category = new Category();
         category.setName(dto.name());
         return category;
-    }
-
-    public CategoryPatch mapToCategoryPatch(final CategoryUpdateDto dto) {
-        if (dto == null) {
-            return null;
-        }
-        return new CategoryPatch(dto.name());
     }
 
     @Override
@@ -36,6 +30,14 @@ public class CategoryMapperImpl implements CategoryMapper {
         final Category category = new Category();
         category.setId(id);
         return category;
+    }
+
+    @Override
+    public CategoryPatch mapToCategoryPatch(final CategoryUpdateDto dto) {
+        if (dto == null) {
+            return null;
+        }
+        return new CategoryPatch(dto.name());
     }
 
     @Override

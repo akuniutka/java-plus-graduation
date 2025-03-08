@@ -7,6 +7,7 @@ public record CategoryCreateDto(
 
         @NotBlank
         @Size(max = 50)
-        String name) {
+        String name
+) {
 
 }

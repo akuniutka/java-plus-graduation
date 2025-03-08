@@ -7,6 +7,7 @@ public record CategoryPatch(
 
         @NotBlankOrNull
         @Size(max = 50)
-        String name) {
+        String name
+) {
 
 }

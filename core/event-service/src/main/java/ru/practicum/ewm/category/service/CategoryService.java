@@ -1,9 +1,6 @@
 package ru.practicum.ewm.category.service;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
+import org.springframework.data.domain.Pageable;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.category.model.CategoryPatch;
 
@@ -11,13 +8,13 @@ import java.util.List;
 
 public interface CategoryService {
 
-    Category add(@NotNull @Valid Category category);
+    Category save(Category category);
+
+    List<Category> findAll(Pageable pageable);
 
     Category getById(long id);
 
-    List<Category> getAllInWindow(@Positive int windowSize, @PositiveOrZero int windowIndex);
+    Category update(long id, CategoryPatch patch);
 
-    Category update(long id, @NotNull @Valid CategoryPatch patch);
-
-    void removeById(long id);
+    void deleteById(long id);
 }

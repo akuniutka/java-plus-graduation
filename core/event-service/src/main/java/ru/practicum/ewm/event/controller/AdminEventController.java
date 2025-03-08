@@ -1,8 +1,7 @@
 package ru.practicum.ewm.event.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
@@ -11,7 +10,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.ewm.common.HttpRequestResponseLogger;
 import ru.practicum.ewm.event.dto.AdminEventFilter;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.mapper.EventMapper;
@@ -24,44 +22,52 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/admin/events")
-@RequiredArgsConstructor
-public class AdminEventController extends HttpRequestResponseLogger {
+@Slf4j
+public class AdminEventController {
 
     private static final int DEFAULT_PAGE_FROM = 0;
     private static final int DEFAULT_PAGE_SIZE = 10;
 
-    private final EventService viewRichEventServiceFacade;
-    private final EventMapper eventMapper;
-    private final EventDtoValidatorExtension eventDtoValidatorExtension;
+    private final EventService service;
+    private final EventMapper mapper;
+    private final EventDtoValidatorExtension validatorExtension;
+
+    public AdminEventController(
+            final EventService viewRichEventServiceFacade,
+            final EventMapper mapper,
+            final EventDtoValidatorExtension validatorExtension
+    ) {
+        this.service = viewRichEventServiceFacade;
+        this.mapper = mapper;
+        this.validatorExtension = validatorExtension;
+    }
 
     @InitBinder
     public void initBinder(final WebDataBinder binder) {
-        binder.addValidators(eventDtoValidatorExtension);
+        binder.addValidators(validatorExtension);
     }
 
     @GetMapping
-    public List<EventFullDto> findAll(
-            @Valid final AdminEventFilter filter,
-            final HttpServletRequest httpRequest) {
-        logHttpRequest(httpRequest);
+    public List<EventFullDto> findAll(@Valid final AdminEventFilter filter) {
+        log.info("Received request for events: filter = {}", filter);
         final AdminEventFilter filterWithDefaults = withDefaults(filter);
-        final List<Event> events = viewRichEventServiceFacade.findAll(filterWithDefaults);
-        final List<EventFullDto> dtos = eventMapper.mapToFullDto(events);
-        logHttpResponse(httpRequest, dtos);
+        final List<Event> events = service.findAll(filterWithDefaults);
+        final List<EventFullDto> dtos = mapper.mapToFullDto(events);
+        log.info("Responded with requested events: filter = {}", filter);
+        log.debug("Requested events = {}", dtos);
         return dtos;
     }
 
     @PatchMapping("/{eventId}")
-    public EventFullDto update(
-            @PathVariable final long eventId,
-            @RequestBody @Valid UpdateEventAdminRequest updateEventAdminRequest,
-            final HttpServletRequest httpRequest) {
-        logHttpRequest(httpRequest, updateEventAdminRequest);
-        final EventPatch patch = eventMapper.mapToPatch(updateEventAdminRequest);
-        final Event event = viewRichEventServiceFacade.update(eventId, patch);
-        final EventFullDto dto = eventMapper.mapToFullDto(event);
-        logHttpResponse(httpRequest, dto);
-        return dto;
+    public EventFullDto update(@PathVariable final long eventId, @RequestBody @Valid UpdateEventAdminRequest dtoIn) {
+        log.info("Received request to update event: id = {}, state action = {}", eventId, dtoIn.stateAction());
+        log.debug("Event patch = {}", dtoIn);
+        final EventPatch patch = mapper.mapToPatch(dtoIn);
+        final Event event = service.update(eventId, patch);
+        final EventFullDto dtoOut = mapper.mapToFullDto(event);
+        log.info("Responded with updated event: id = {}, state = {}", dtoOut.id(), dtoOut.state());
+        log.debug("Updated event = {}", dtoOut);
+        return dtoOut;
     }
 
     private AdminEventFilter withDefaults(final AdminEventFilter filter) {
