@@ -4,29 +4,41 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.exception.NotFoundException;
-import ru.practicum.ewm.user.mapper.UserMapper;
-import ru.practicum.ewm.user.repository.UserRepository;
-import ru.practicum.ewm.user.dto.NewUserRequest;
-import ru.practicum.ewm.user.dto.UserDto;
 import ru.practicum.ewm.user.model.User;
+import ru.practicum.ewm.user.repository.UserRepository;
 
 import java.util.List;
 import java.util.Set;
 
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Slf4j
 public class UserServiceImpl implements UserService {
 
     private final UserRepository repository;
-    private final UserMapper mapper;
+
+    @Override
+    public User save(final User user) {
+        final User savedUser = repository.save(user);
+        log.info("Added new user: id = {}, name = {}", savedUser.getId(), savedUser.getName());
+        log.debug("User added = {}", savedUser);
+        return savedUser;
+    }
+
+    @Override
+    public List<User> findAll(final Pageable pageable) {
+        return repository.findAll(pageable).getContent();
+    }
 
     @Override
     public List<User> findAllByIdIn(final Set<Long> ids) {
         return repository.findAllByIdIn(ids);
+    }
+
+    @Override
+    public List<User> findAllByIdIn(final List<Long> ids, final Pageable pageable) {
+        return repository.findAllByIdIn(ids, pageable);
     }
 
     @Override
@@ -35,35 +47,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getById(final long id) {
-        return repository.findById(id).orElseThrow(() -> new NotFoundException(User.class, id));
-    }
-
-    @Override
-    public List<UserDto> findAll(final Pageable pageable) {
-        final List<User> users = repository.findAll(pageable).getContent();
-        return mapper.mapToDto(users);
-    }
-
-    @Override
-    public List<UserDto> findByIds(final List<Long> ids, final Pageable pageable) {
-        final List<User> users = repository.findByIdIn(ids, pageable).getContent();
-        return mapper.mapToDto(users);
-    }
-
-    @Transactional
-    @Override
-    public UserDto save(final NewUserRequest requestDto) {
-        final User user = mapper.mapToUser(requestDto);
-        return mapper.mapToDto(repository.save(user));
-    }
-
-    @Transactional
-    @Override
-    public void delete(long id) {
+    public void delete(final long id) {
         if (!repository.existsById(id)) {
             throw new NotFoundException(User.class, id);
         }
         repository.deleteById(id);
+        log.info("Deleted user: id = {}", id);
     }
 }
