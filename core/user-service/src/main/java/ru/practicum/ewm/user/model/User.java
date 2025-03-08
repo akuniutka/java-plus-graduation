@@ -1,6 +1,5 @@
 package ru.practicum.ewm.user.model;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -10,8 +9,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Entity
-@Data
 @Table(name = "users")
+@Data
 @EqualsAndHashCode(of = "id")
 public class User {
 
@@ -19,9 +18,6 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name")
     private String name;
-
-    @Column(name = "email", unique = true)
     private String email;
 }

@@ -1,22 +1,30 @@
 package ru.practicum.ewm.user.mapper;
 
 import org.junit.jupiter.api.Test;
-import ru.practicum.ewm.user.dto.UserShortDto;
 import ru.practicum.ewm.user.dto.NewUserRequest;
 import ru.practicum.ewm.user.dto.UserDto;
+import ru.practicum.ewm.user.dto.UserShortDto;
 import ru.practicum.ewm.user.model.User;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static ru.practicum.ewm.user.util.UserTestUtil.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static ru.practicum.ewm.user.util.UserTestUtil.EMAIL_1;
+import static ru.practicum.ewm.user.util.UserTestUtil.EMAIL_2;
+import static ru.practicum.ewm.user.util.UserTestUtil.USER_ID_1;
+import static ru.practicum.ewm.user.util.UserTestUtil.USER_ID_2;
+import static ru.practicum.ewm.user.util.UserTestUtil.USER_NAME_1;
+import static ru.practicum.ewm.user.util.UserTestUtil.USER_NAME_2;
 
 class UserMapperTest {
+
     private final UserMapper userMapper = new UserMapper();
 
     @Test
     void testNewUserRequestToUser() {
-        NewUserRequest request = new NewUserRequest(EMAIL_1, USER_NAME_1);
+        NewUserRequest request = new NewUserRequest(USER_NAME_1, EMAIL_1);
 
         User result = userMapper.mapToUser(request);
 
@@ -27,20 +35,7 @@ class UserMapperTest {
 
     @Test
     void testNullNewUserRequestToUser() {
-        assertNull(userMapper.mapToUser((NewUserRequest) null));
-    }
-
-    @Test
-    void testIdToUser() {
-        User result = userMapper.mapToUser(USER_ID_1);
-
-        assertNotNull(result);
-        assertEquals(USER_ID_1, result.getId());
-    }
-
-    @Test
-    void testNullIdToUser() {
-        assertNull(userMapper.mapToUser((Long) null));
+        assertNull(userMapper.mapToUser(null));
     }
 
     @Test
@@ -79,9 +74,9 @@ class UserMapperTest {
 
         assertNotNull(result);
         assertEquals(2, result.size());
-        assertEquals(USER_ID_1, result.get(0).id());
-        assertEquals(USER_NAME_1, result.get(0).name());
-        assertEquals(EMAIL_1, result.get(0).email());
+        assertEquals(USER_ID_1, result.getFirst().id());
+        assertEquals(USER_NAME_1, result.getFirst().name());
+        assertEquals(EMAIL_1, result.getFirst().email());
         assertEquals(USER_ID_2, result.get(1).id());
         assertEquals(USER_NAME_2, result.get(1).name());
         assertEquals(EMAIL_2, result.get(1).email());

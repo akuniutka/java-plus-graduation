@@ -1,31 +1,23 @@
 package ru.practicum.ewm.user.mapper;
 
 import org.springframework.stereotype.Component;
-import ru.practicum.ewm.user.dto.UserShortDto;
 import ru.practicum.ewm.user.dto.NewUserRequest;
 import ru.practicum.ewm.user.dto.UserDto;
+import ru.practicum.ewm.user.dto.UserShortDto;
 import ru.practicum.ewm.user.model.User;
 
 import java.util.List;
 
 @Component
 public class UserMapper {
-    public User mapToUser(NewUserRequest dto) {
+
+    public User mapToUser(final NewUserRequest dto) {
         if (dto == null) {
             return null;
         }
         final User user = new User();
         user.setName(dto.name());
         user.setEmail(dto.email());
-        return user;
-    }
-
-    public User mapToUser(final Long id) {
-        if (id == null) {
-            return null;
-        }
-        final User user = new User();
-        user.setId(id);
         return user;
     }
 

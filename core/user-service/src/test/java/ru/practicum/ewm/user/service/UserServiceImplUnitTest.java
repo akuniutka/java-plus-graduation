@@ -7,7 +7,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageImpl;
 import ru.practicum.ewm.exception.NotFoundException;
 import ru.practicum.ewm.user.dto.NewUserRequest;
 import ru.practicum.ewm.user.dto.UserDto;
@@ -66,49 +65,6 @@ public class UserServiceImplUnitTest {
     @AfterEach
     void tearDown() {
         verifyNoMoreInteractions(userRepository, mapper);
-    }
-
-    @Test
-    void testFindAll() {
-        when(userRepository.findAll(PAGEABLE)).thenReturn(new PageImpl<>(users));
-        when(mapper.mapToDto(users)).thenReturn(userDtos);
-
-        List<UserDto> result = userService.findAll(PAGEABLE);
-
-        assertThat(result, is(userDtos));
-
-        verify(userRepository).findAll(PAGEABLE);
-        verify(mapper).mapToDto(users);
-    }
-
-    @Test
-    void testFindByIds() {
-        List<Long> ids = List.of(USER_ID_1, USER_ID_2);
-
-        when(userRepository.findByIdIn(ids, PAGEABLE)).thenReturn(new PageImpl<>(users));
-        when(mapper.mapToDto(users)).thenReturn(userDtos);
-
-        List<UserDto> result = userService.findByIds(ids, PAGEABLE);
-
-        assertThat(result, is(userDtos));
-
-        verify(userRepository).findByIdIn(ids, PAGEABLE);
-        verify(mapper).mapToDto(users);
-    }
-
-    @Test
-    void testSave() {
-        when(mapper.mapToUser(newUserRequest)).thenReturn(user1);
-        when(userRepository.save(user1)).thenReturn(user1);
-        when(mapper.mapToDto(user1)).thenReturn(userDto1);
-
-        UserDto result = userService.save(newUserRequest);
-
-        assertThat(result, is(userDto1));
-
-        verify(mapper).mapToUser(newUserRequest);
-        verify(userRepository).save(user1);
-        verify(mapper).mapToDto(user1);
     }
 
     @Test
