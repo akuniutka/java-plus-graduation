@@ -1,6 +1,12 @@
 package ru.practicum.ewm.request.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -19,15 +25,15 @@ public class Request {
     private Long id;
 
     @NotNull
+    private Long requesterId;
+
+    @NotNull
     private Long eventId;
 
     @CreationTimestamp
     private LocalDateTime created;
 
-    @NotNull
-    private Long requesterId;
-
     @Enumerated(EnumType.STRING)
     @NotNull
-    RequestState status;
+    private RequestState status;
 }

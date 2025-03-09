@@ -1,16 +1,15 @@
 package ru.practicum.ewm.request.mapper;
 
+import org.springframework.stereotype.Component;
 import ru.practicum.ewm.request.dto.RequestDto;
 import ru.practicum.ewm.request.model.Request;
 
 import java.util.List;
 
+@Component
 public class RequestMapper {
 
-    private RequestMapper() {
-    }
-
-    public static RequestDto mapToRequestDto(Request request) {
+    public RequestDto mapToDto(final Request request) {
         return RequestDto.builder()
                 .requester(request.getRequesterId())
                 .id(request.getId())
@@ -20,12 +19,12 @@ public class RequestMapper {
                 .build();
     }
 
-    public static List<RequestDto> mapToRequestDto(final List<Request> requests) {
+    public List<RequestDto> mapToDto(final List<Request> requests) {
         if (requests == null) {
             return null;
         }
         return requests.stream()
-                .map(RequestMapper::mapToRequestDto)
+                .map(this::mapToDto)
                 .toList();
     }
 }

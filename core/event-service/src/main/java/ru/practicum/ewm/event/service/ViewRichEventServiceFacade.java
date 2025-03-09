@@ -146,6 +146,9 @@ public class ViewRichEventServiceFacade implements EventService {
                 .map(Event::getId)
                 .map("/events/%s"::formatted)
                 .toList();
+        if (uris.isEmpty()) {
+            return;
+        }
         final Map<String, Long> views = client.getStats(VIEWS_FROM, VIEWS_TO, uris, true).stream()
                 .collect(Collectors.toMap(ViewStatsDto::uri, ViewStatsDto::hits));
         events.forEach(event -> event.setViews(views.getOrDefault("/events/" + event.getId(), 0L)));
