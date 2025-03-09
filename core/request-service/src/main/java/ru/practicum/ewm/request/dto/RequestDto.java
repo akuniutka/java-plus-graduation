@@ -9,14 +9,13 @@ import java.time.LocalDateTime;
 @Builder(toBuilder = true)
 public record RequestDto(
 
+        long id,
+        long requester,
+        long event,
         LocalDateTime created,
 
-        long event,
-
-        long id,
-
-        long requester,
-
         @JsonFormat(shape = JsonFormat.Shape.STRING)
-        RequestState status) {
+        RequestState status
+) {
+
 }

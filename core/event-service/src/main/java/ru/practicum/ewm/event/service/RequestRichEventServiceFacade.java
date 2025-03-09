@@ -163,6 +163,9 @@ public class RequestRichEventServiceFacade implements EventService {
                 .filter(event -> event.getState() == EventState.PUBLISHED)
                 .map(Event::getId)
                 .collect(Collectors.toSet());
+        if (ids.isEmpty()) {
+            return;
+        }
         final Map<Long, Long> confirmedRequests = client.getConfirmedRequestStats(ids).stream()
                 .collect(Collectors.toMap(RequestStats::eventId, RequestStats::requestsCount));
         events.forEach(event -> event.setConfirmedRequests(confirmedRequests.getOrDefault(event.getId(), 0L)));

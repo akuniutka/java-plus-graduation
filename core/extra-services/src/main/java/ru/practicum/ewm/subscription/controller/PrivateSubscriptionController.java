@@ -4,7 +4,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.ewm.common.HttpRequestResponseLogger;
 import ru.practicum.ewm.event.dto.EventShortDto;
 import ru.practicum.ewm.subscription.dto.EventFilter;
@@ -25,8 +32,8 @@ public class PrivateSubscriptionController extends HttpRequestResponseLogger {
 
     @PostMapping
     public void subscribe(@PathVariable final long userId,
-                          @RequestParam final long initiatorId,
-                          final HttpServletRequest request) {
+            @RequestParam final long initiatorId,
+            final HttpServletRequest request) {
         logHttpRequest(request);
         subscriptionService.subscribe(userId, initiatorId);
         logHttpResponse(request);
@@ -46,8 +53,8 @@ public class PrivateSubscriptionController extends HttpRequestResponseLogger {
     @DeleteMapping("/{initiatorId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void unsubscribe(@PathVariable final long userId,
-                            @PathVariable final long initiatorId,
-                            final HttpServletRequest request) {
+            @PathVariable final long initiatorId,
+            final HttpServletRequest request) {
         logHttpRequest(request);
         subscriptionService.unsubscribe(userId, initiatorId);
         logHttpResponse(request);

@@ -1,6 +1,15 @@
 package ru.practicum.ewm.compilation.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import ru.practicum.ewm.event.dto.EventShortDto;
@@ -12,6 +21,7 @@ import java.util.Set;
 @Data
 @EqualsAndHashCode(of = "id")
 public class Compilation {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
