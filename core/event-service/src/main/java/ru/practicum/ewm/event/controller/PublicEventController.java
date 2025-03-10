@@ -38,7 +38,7 @@ public class PublicEventController {
     private final Clock clock;
 
     public PublicEventController(
-            @Value("spring.application.name") final String serviceName,
+            @Value("${spring.application.name}") final String serviceName,
             final EventService viewRichEventServiceFacade,
             final EventMapper mapper,
             final StatsClient statsClient,

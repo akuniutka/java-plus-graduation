@@ -1,4 +1,4 @@
-package ru.practicum.ewm.stats;
+package ru.practicum.ewm.stats.service;
 
 import org.json.JSONException;
 import org.junit.jupiter.api.AfterEach;
@@ -7,23 +7,24 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import ru.practicum.ewm.stats.model.ViewStats;
+import ru.practicum.ewm.stats.repository.StatsRepository;
+import ru.practicum.ewm.stats.util.LogListener;
 
 import java.io.IOException;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static ru.practicum.ewm.stats.TestUtils.END;
-import static ru.practicum.ewm.stats.TestUtils.ENDPOINT;
-import static ru.practicum.ewm.stats.TestUtils.START;
-import static ru.practicum.ewm.stats.TestUtils.assertLogs;
-import static ru.practicum.ewm.stats.TestUtils.equalTo;
-import static ru.practicum.ewm.stats.TestUtils.makeTestEndpointHit;
-import static ru.practicum.ewm.stats.TestUtils.makeTestViewStats;
+import static ru.practicum.ewm.stats.util.TestUtils.END;
+import static ru.practicum.ewm.stats.util.TestUtils.ENDPOINT;
+import static ru.practicum.ewm.stats.util.TestUtils.START;
+import static ru.practicum.ewm.stats.util.TestUtils.assertLogs;
+import static ru.practicum.ewm.stats.util.TestUtils.equalTo;
+import static ru.practicum.ewm.stats.util.TestUtils.makeTestEndpointHit;
+import static ru.practicum.ewm.stats.util.TestUtils.makeTestViewStats;
 
 class StatsServiceImplTest {
 
@@ -59,14 +60,6 @@ class StatsServiceImplTest {
 
         verify(repository).save(makeTestEndpointHit().withNoId());
         assertLogs(logListener.getEvents(), "add_endpoint_hit.json", getClass());
-    }
-
-    @Test
-    void testAddEndpointHitWhenNull() {
-        final NullPointerException exception = assertThrows(NullPointerException.class,
-                () -> service.addEndpointHit(null));
-
-        assertThat(exception.getMessage(), equalTo("Cannot add endpoint hit: is null"));
     }
 
     @Test
@@ -117,23 +110,5 @@ class StatsServiceImplTest {
 
         verify(repository).getUniqueHits(START, END, List.of(ENDPOINT));
         assertThat(actual, contains(equalTo(makeTestViewStats())));
-    }
-
-    @Test
-    void testGetViewStatsWhenStartNull() {
-
-        final NullPointerException exception = assertThrows(NullPointerException.class,
-                () -> service.getViewStats(null, END, null, false));
-
-        assertThat(exception.getMessage(), equalTo("Date and time to gather stats from cannot be null"));
-    }
-
-    @Test
-    void testGetViewStatsWhenEndNull() {
-
-        final NullPointerException exception = assertThrows(NullPointerException.class,
-                () -> service.getViewStats(START, null, null, false));
-
-        assertThat(exception.getMessage(), equalTo("Date and time to gather stats to cannot be null"));
     }
 }

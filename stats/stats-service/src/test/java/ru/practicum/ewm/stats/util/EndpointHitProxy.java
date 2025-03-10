@@ -1,10 +1,12 @@
-package ru.practicum.ewm.stats;
+package ru.practicum.ewm.stats.util;
+
+import ru.practicum.ewm.stats.model.EndpointHit;
 
 import java.util.Objects;
 
 public class EndpointHitProxy extends EndpointHit {
 
-    EndpointHitProxy withNoId() {
+    public EndpointHitProxy withNoId() {
         super.setId(null);
         return this;
     }

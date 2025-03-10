@@ -1,4 +1,4 @@
-package ru.practicum.ewm.stats;
+package ru.practicum.ewm.stats.controller;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +15,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.practicum.ewm.stats.mapper.StatsMapper;
+import ru.practicum.ewm.stats.model.ViewStats;
+import ru.practicum.ewm.stats.service.StatsService;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
@@ -32,15 +35,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static ru.practicum.ewm.stats.TestUtils.END;
-import static ru.practicum.ewm.stats.TestUtils.ENDPOINT;
-import static ru.practicum.ewm.stats.TestUtils.START;
-import static ru.practicum.ewm.stats.TestUtils.equalTo;
-import static ru.practicum.ewm.stats.TestUtils.loadJson;
-import static ru.practicum.ewm.stats.TestUtils.makeTestEndpointHit;
-import static ru.practicum.ewm.stats.TestUtils.makeTestEndpointHitDto;
-import static ru.practicum.ewm.stats.TestUtils.makeTestViewStats;
-import static ru.practicum.ewm.stats.TestUtils.makeTestViewStatsDto;
+import static ru.practicum.ewm.stats.util.TestUtils.END;
+import static ru.practicum.ewm.stats.util.TestUtils.ENDPOINT;
+import static ru.practicum.ewm.stats.util.TestUtils.START;
+import static ru.practicum.ewm.stats.util.TestUtils.equalTo;
+import static ru.practicum.ewm.stats.util.TestUtils.loadJson;
+import static ru.practicum.ewm.stats.util.TestUtils.makeTestEndpointHit;
+import static ru.practicum.ewm.stats.util.TestUtils.makeTestEndpointHitDto;
+import static ru.practicum.ewm.stats.util.TestUtils.makeTestViewStats;
+import static ru.practicum.ewm.stats.util.TestUtils.makeTestViewStatsDto;
 
 @WebMvcTest(controllers = StatsController.class)
 class StatsControllerIT {
