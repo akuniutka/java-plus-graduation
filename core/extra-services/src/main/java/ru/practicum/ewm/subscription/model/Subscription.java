@@ -23,5 +23,5 @@ public class Subscription {
     private Long subscriberId;
 
     @NotNull
-    private Long targetId;
+    private Long publisherId;
 }

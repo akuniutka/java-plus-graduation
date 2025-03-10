@@ -3,7 +3,6 @@ package ru.practicum.ewm.subscription.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.event.client.EventClient;
 import ru.practicum.ewm.event.dto.EventShortDto;
 import ru.practicum.ewm.event.dto.InternalEventFilter;
@@ -24,36 +23,37 @@ import java.util.Set;
 public class SubscriptionServiceImpl implements SubscriptionService {
 
     private final UserClient userClient;
-    private final SubscriptionRepository subscriptionRepository;
     private final EventClient eventClient;
+    private final SubscriptionRepository repository;
 
-    @Transactional
     @Override
-    public void subscribe(long subscriberId, long targetId) {
-        if (subscriberId == targetId) {
+    public void subscribe(final long subscriberId, final long publisherId) {
+        requireUserExist(subscriberId);
+        requireUserExist(publisherId);
+        if (subscriberId == publisherId) {
             throw new NotPossibleException("User cannot subscribe to himself");
         }
-        if (subscriptionRepository.existsBySubscriberIdAndTargetId(subscriberId, targetId)) {
+        if (repository.existsBySubscriberIdAndPublisherId(subscriberId, publisherId)) {
             throw new NotPossibleException("Subscription already exists");
         }
-        requireUserExist(subscriberId);
-        requireUserExist(targetId);
-        final Subscription subscription = new Subscription();
+        Subscription subscription = new Subscription();
         subscription.setSubscriberId(subscriberId);
-        subscription.setTargetId(targetId);
-        subscriptionRepository.save(subscription);
+        subscription.setPublisherId(publisherId);
+        subscription = repository.save(subscription);
+        log.info("Added new subscription: id = {}, subscriberId = {}, publisherId = {}", subscription.getId(),
+                subscription.getSubscriberId(), subscription.getPublisherId());
+        log.debug("Subscription added = {}", subscription);
     }
 
-    @Transactional(readOnly = true)
     @Override
-    public List<EventShortDto> getEvents(long subscriberId, EventFilter filter) {
+    public List<EventShortDto> getEvents(final long subscriberId, final EventFilter filter) {
         if (filter.rangeStart() != null && filter.rangeEnd() != null
                 && filter.rangeEnd().isBefore(filter.rangeStart())) {
             throw new ParameterValidationException("rangeEnd", "must be after or equal to 'rangeStart'",
                     filter.rangeEnd());
         }
         requireUserExist(subscriberId);
-        final List<Long> initiatorIds = subscriptionRepository.findTargetIdsBySubscriberId(subscriberId);
+        final List<Long> initiatorIds = repository.findPublisherIdsBySubscriberId(subscriberId);
         if (initiatorIds.isEmpty()) {
             return List.of();
         }
@@ -73,17 +73,18 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         return eventClient.findAll(internalFilter);
     }
 
-    @Transactional
     @Override
-    public void unsubscribe(long subscriberId, long targetId) {
-        if (subscriberId == targetId) {
+    public void unsubscribe(final long subscriberId, final long publisherId) {
+        requireUserExist(subscriberId);
+        requireUserExist(publisherId);
+        if (subscriberId == publisherId) {
             throw new NotPossibleException("User cannot unsubscribe from himself");
         }
-        requireUserExist(subscriberId);
-        requireUserExist(targetId);
-        final Subscription subscription = subscriptionRepository.findBySubscriberIdAndTargetId(subscriberId, targetId)
-                .orElseThrow(() -> new NotFoundException(Subscription.class, Set.of(subscriberId, targetId)));
-        subscriptionRepository.delete(subscription);
+        final Subscription subscription = repository.findBySubscriberIdAndPublisherId(subscriberId, publisherId)
+                .orElseThrow(() -> new NotFoundException(Subscription.class, Set.of(subscriberId, publisherId)));
+        repository.delete(subscription);
+        log.info("Deleted subscription: id = {}, subscriberId = {}, publisherId = {}", subscription.getId(),
+                subscription.getSubscriberId(), subscription.getPublisherId());
     }
 
     private void requireUserExist(final long userId) {

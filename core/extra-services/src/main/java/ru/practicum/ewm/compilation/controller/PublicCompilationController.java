@@ -1,17 +1,19 @@
 package ru.practicum.ewm.compilation.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.ewm.common.HttpRequestResponseLogger;
 import ru.practicum.ewm.compilation.dto.CompilationDto;
+import ru.practicum.ewm.compilation.mapper.CompilationMapper;
+import ru.practicum.ewm.compilation.model.Compilation;
 import ru.practicum.ewm.compilation.service.CompilationService;
 
 import java.util.List;
@@ -19,27 +21,34 @@ import java.util.List;
 @RestController
 @RequestMapping("/compilations")
 @RequiredArgsConstructor
-public class PublicCompilationController extends HttpRequestResponseLogger {
+@Slf4j
+public class PublicCompilationController {
 
-    private final CompilationService compilationService;
+    private final CompilationService service;
+    private final CompilationMapper mapper;
 
     @GetMapping
-    public List<CompilationDto> get(@RequestParam(required = false) Boolean pinned,
+    public List<CompilationDto> findAll(
+            @RequestParam(required = false) Boolean pinned,
             @RequestParam(defaultValue = "0") @PositiveOrZero final int from,
-            @RequestParam(defaultValue = "10") @Positive final int size,
-            final HttpServletRequest request) {
-        logHttpRequest(request);
-        final PageRequest pageRequest = PageRequest.of(from / size, size);
-        final List<CompilationDto> response = compilationService.getAll(pinned, pageRequest);
-        logHttpResponse(request, response);
-        return response;
+            @RequestParam(defaultValue = "10") @Positive final int size
+    ) {
+        log.info("Received request for compilations: pinned = {}, from = {}, size = {}", pinned, from, size);
+        final Pageable pageable = PageRequest.of(from / size, size);
+        final List<Compilation> compilations = service.findAll(pinned, pageable);
+        final List<CompilationDto> dtos = mapper.mapToDto(compilations);
+        log.info("Responded with requested compilations: pinned = {}, from = {}, size = {}", pinned, from, size);
+        log.debug("Requested compilations = {}", dtos);
+        return dtos;
     }
 
     @GetMapping("/{id}")
-    public CompilationDto getById(@PathVariable final long id, final HttpServletRequest request) {
-        logHttpRequest(request);
-        final CompilationDto responseDto = compilationService.getById(id);
-        logHttpResponse(request, responseDto);
-        return responseDto;
+    public CompilationDto getById(@PathVariable final long id) {
+        log.info("Received request for compilation: id = {}", id);
+        final Compilation compilation = service.getById(id);
+        final CompilationDto dto = mapper.mapToDto(compilation);
+        log.info("Responded with requested compilation: id = {}", dto.id());
+        log.debug("Requested compilation = {}", dto);
+        return dto;
     }
 }
