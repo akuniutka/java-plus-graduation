@@ -1,6 +1,5 @@
 package ru.practicum.ewm.compilation.mapper;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.practicum.ewm.compilation.model.Compilation;
 import ru.practicum.ewm.compilation.dto.CompilationDto;
@@ -9,7 +8,6 @@ import ru.practicum.ewm.compilation.dto.NewCompilationDto;
 import java.util.List;
 
 @Component
-@RequiredArgsConstructor
 public class CompilationMapper {
 
     public Compilation mapToCompilation(final NewCompilationDto dto) {
@@ -39,6 +37,8 @@ public class CompilationMapper {
         if (compilations == null) {
             return null;
         }
-        return compilations.stream().map(this::mapToDto).toList();
+        return compilations.stream()
+                .map(this::mapToDto)
+                .toList();
     }
 }

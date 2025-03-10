@@ -4,6 +4,7 @@ import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -26,7 +27,9 @@ public class Compilation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ElementCollection
+    private String title;
+
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "compilations_events", joinColumns = @JoinColumn(name = "compilation_id"))
     @Column(name = "event_id")
     private Set<Long> eventIds;
@@ -34,9 +37,5 @@ public class Compilation {
     @Transient
     private Set<EventShortDto> events;
 
-    @Column(name = "pinned", nullable = false)
     private Boolean pinned;
-
-    @Column(name = "title", nullable = false)
-    private String title;
 }

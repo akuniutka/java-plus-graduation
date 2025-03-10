@@ -1,8 +1,8 @@
 package ru.practicum.ewm.subscription.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,42 +22,40 @@ import java.util.List;
 @RestController
 @RequestMapping("/users/{userId}/subscriptions")
 @RequiredArgsConstructor
+@Slf4j
 public class PrivateSubscriptionController extends HttpRequestResponseLogger {
 
     private static final boolean DEFAULT_ONLY_AVAILABLE = false;
     private static final int DEFAULT_PAGE_FROM = 0;
     private static final int DEFAULT_PAGE_SIZE = 10;
 
-    private final SubscriptionService subscriptionService;
+    private final SubscriptionService service;
 
     @PostMapping
-    public void subscribe(@PathVariable final long userId,
-            @RequestParam final long initiatorId,
-            final HttpServletRequest request) {
-        logHttpRequest(request);
-        subscriptionService.subscribe(userId, initiatorId);
-        logHttpResponse(request);
+    public void subscribe(@PathVariable final long userId, @RequestParam final long initiatorId) {
+        log.info("Received request to add new subscription: subscriberId = {}, publisherId = {}", userId, initiatorId);
+        service.subscribe(userId, initiatorId);
+        log.info("Responded with {} to add subscription request: subscriberId = {}, publisherId = {}",
+                HttpStatus.OK, userId, initiatorId);
     }
 
     @GetMapping
-    public List<EventShortDto> getEvents(
-            @PathVariable final long userId,
-            @Valid final EventFilter filter,
-            final HttpServletRequest request) {
+    public List<EventShortDto> getEvents(@PathVariable final long userId, @Valid final EventFilter filter) {
+        log.info("Received request for events: subscriberId = {}, filter = {}", userId, filter);
         final EventFilter filterWithDefaults = withDefaults(filter);
-        final List<EventShortDto> dtos = subscriptionService.getEvents(userId, filterWithDefaults);
-        logHttpResponse(request, dtos);
+        final List<EventShortDto> dtos = service.getEvents(userId, filterWithDefaults);
+        log.info("Responded with requested events: subscriberId = {}, filter = {}", userId, filter);
+        log.debug("Requested events = {}", dtos);
         return dtos;
     }
 
     @DeleteMapping("/{initiatorId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void unsubscribe(@PathVariable final long userId,
-            @PathVariable final long initiatorId,
-            final HttpServletRequest request) {
-        logHttpRequest(request);
-        subscriptionService.unsubscribe(userId, initiatorId);
-        logHttpResponse(request);
+    public void unsubscribe(@PathVariable final long userId, @PathVariable final long initiatorId) {
+        log.info("Received request to delete subscription: subscriberId = {}, publisherId = {}", userId, initiatorId);
+        service.unsubscribe(userId, initiatorId);
+        log.info("Responded with {} to delete subscription request: subscriberId = {}, publisherId = {}",
+                HttpStatus.NO_CONTENT, userId, initiatorId);
     }
 
     private EventFilter withDefaults(final EventFilter filter) {

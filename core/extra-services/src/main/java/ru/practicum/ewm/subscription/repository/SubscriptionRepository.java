@@ -9,10 +9,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
-    boolean existsBySubscriberIdAndTargetId(long subscriberId, long targetId);
 
-    Optional<Subscription> findBySubscriberIdAndTargetId(long subscriberId, long targetId);
+    boolean existsBySubscriberIdAndPublisherId(long subscriberId, long publisherId);
 
-    @Query("SELECT s.targetId FROM Subscription s WHERE s.subscriberId = :subscriberId")
-    List<Long> findTargetIdsBySubscriberId(@Param("subscriberId") Long subscriberId);
+    Optional<Subscription> findBySubscriberIdAndPublisherId(long subscriberId, long publisherId);
+
+    @Query("SELECT s.publisherId FROM Subscription s WHERE s.subscriberId = :subscriberId")
+    List<Long> findPublisherIdsBySubscriberId(@Param("subscriberId") Long subscriberId);
 }

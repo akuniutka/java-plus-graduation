@@ -6,9 +6,10 @@ import ru.practicum.ewm.subscription.dto.EventFilter;
 import java.util.List;
 
 public interface SubscriptionService {
-    void subscribe(long subscriberId, long targetId);
+
+    void subscribe(long subscriberId, long publisherId);
 
     List<EventShortDto> getEvents(long subscriberId, EventFilter filter);
 
-    void unsubscribe(long subscriberId, long targetId);
+    void unsubscribe(long subscriberId, long publisherId);
 }

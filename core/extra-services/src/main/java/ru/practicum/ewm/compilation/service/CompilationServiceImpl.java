@@ -3,17 +3,14 @@ package ru.practicum.ewm.compilation.service;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import ru.practicum.ewm.compilation.model.Compilation;
-import ru.practicum.ewm.compilation.dto.CompilationDto;
 import ru.practicum.ewm.compilation.repository.CompilationRepository;
-import ru.practicum.ewm.compilation.dto.NewCompilationDto;
 import ru.practicum.ewm.compilation.model.QCompilation;
 import ru.practicum.ewm.compilation.dto.UpdateCompilationRequest;
-import ru.practicum.ewm.compilation.mapper.CompilationMapper;
 import ru.practicum.ewm.event.client.EventClient;
 import ru.practicum.ewm.event.dto.EventShortDto;
 import ru.practicum.ewm.event.dto.InternalEventFilter;
@@ -23,25 +20,34 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Slf4j
 public class CompilationServiceImpl implements CompilationService {
 
-    private final CompilationMapper mapper;
-    private final CompilationRepository compilationRepository;
     private final EventClient eventClient;
+    private final CompilationRepository repository;
 
     @Override
-    public List<CompilationDto> getAll(Boolean pinned, Pageable pageable) {
+    public Compilation save(final Compilation compilation) {
+        final Compilation savedCompilation = repository.save(compilation);
+        log.info("Added new compilation: id = {}, title = {}", savedCompilation.getId(), savedCompilation.getTitle());
+        log.debug("Compilation added = {}", savedCompilation);
+        savedCompilation.setEvents(fetchEvents(compilation.getEventIds()));
+        return savedCompilation;
+    }
+
+    @Override
+    public List<Compilation> findAll(final Boolean pinned, final Pageable pageable) {
         final BooleanExpression byPinned = pinned != null
                 ? QCompilation.compilation.pinned.eq(pinned)
                 : Expressions.TRUE; // если pinned = null ищем все подборки без фильтрации
-        final List<Compilation> compilations = compilationRepository.findAll(byPinned, pageable).getContent();
+        final List<Compilation> compilations = repository.findAll(byPinned, pageable).getContent();
         final Set<Long> eventIds = compilations.stream()
                 .flatMap(compilation -> compilation.getEventIds().stream())
                 .collect(Collectors.toSet());
@@ -52,52 +58,42 @@ public class CompilationServiceImpl implements CompilationService {
                         .map(events::get)
                         .collect(Collectors.toSet())
         ));
-        return mapper.mapToDto(compilations);
+        return compilations;
     }
 
     @Override
-    public CompilationDto getById(long id) {
-        final Compilation compilation = compilationRepository.findById(id)
+    public Compilation getById(final long id) {
+        final Compilation compilation = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException(Compilation.class, id));
         compilation.setEvents(fetchEvents(compilation.getEventIds()));
-        return mapper.mapToDto(compilation);
+        return compilation;
     }
 
-    @Transactional
     @Override
-    public CompilationDto save(final NewCompilationDto requestDto) {
-        final Compilation compilation = mapper.mapToCompilation(requestDto);
-        final Compilation savedCompilation = compilationRepository.save(compilation);
-        savedCompilation.setEvents(fetchEvents(compilation.getEventIds()));
-        return mapper.mapToDto(savedCompilation);
+    public Compilation update(final long id, final UpdateCompilationRequest patch) {
+        Compilation compilation = repository.findById(id)
+                .orElseThrow(() -> new NotFoundException(Compilation.class, id));
+        applyPatch(compilation, patch);
+        compilation = repository.save(compilation);
+        log.info("Updated compilation: id = {}", compilation.getId());
+        log.debug("Updated compilation = {}", compilation);
+        compilation.setEvents(fetchEvents(compilation.getEventIds()));
+        return compilation;
     }
 
-    @Transactional
     @Override
-    public void delete(long id) {
-        if (!compilationRepository.existsById(id)) {
+    public void deleteById(final long id) {
+        if (!repository.existsById(id)) {
             throw new NotFoundException(Compilation.class, id);
         }
-        compilationRepository.deleteById(id);
+        repository.deleteById(id);
+        log.info("Deleted compilation: id = {}", id);
     }
 
-    @Transactional
-    @Override
-    public CompilationDto update(long id, UpdateCompilationRequest requestDto) {
-        final Compilation compilation = compilationRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(Compilation.class, id));
-        if (requestDto.title() != null) {
-            compilation.setTitle(requestDto.title());
-        }
-        if (requestDto.pinned() != null) {
-            compilation.setPinned(requestDto.pinned());
-        }
-        if (requestDto.events() != null) {
-            compilation.setEventIds(requestDto.events());
-        }
-        final Compilation updatedCompilation = compilationRepository.save(compilation);
-        updatedCompilation.setEvents(fetchEvents(updatedCompilation.getEventIds()));
-        return mapper.mapToDto(updatedCompilation);
+    private void applyPatch(final Compilation compilation, final UpdateCompilationRequest patch) {
+        Optional.ofNullable(patch.title()).ifPresent(compilation::setTitle);
+        Optional.ofNullable(patch.pinned()).ifPresent(compilation::setPinned);
+        Optional.ofNullable(patch.events()).ifPresent(compilation::setEventIds);
     }
 
     private Set<EventShortDto> fetchEvents(final Set<Long> ids) {
