@@ -2,12 +2,14 @@ package ru.practicum.ewm.exception;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.Clock;
@@ -45,11 +47,34 @@ public class ControllerExceptionHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError handleWrongValuesInQueryString(final HandlerMethodValidationException exception) {
+        log.warn(exception.getMessage());
+        final List<FieldErrorData> errors = exception.getValueResults().stream()
+                .flatMap(result -> result.getResolvableErrors().stream()
+                        .map(error -> new FieldErrorData(
+                                result.getMethodParameter().getParameterName(),
+                                error.getDefaultMessage(),
+                                result.getArgument())))
+                .toList();
+        return handleFieldErrorInternally(ParameterType.PARAMETER, errors);
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError handleParameterValidationException(final ParameterValidationException exception) {
         log.warn(exception.getMessage());
         final List<FieldErrorData> errors = List.of(new FieldErrorData(exception.getParameter(), exception.getError(),
                 exception.getValue()));
         return handleFieldErrorInternally(ParameterType.PARAMETER, errors);
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError handleFieldValidationException(final FieldValidationException exception) {
+        log.warn(exception.getMessage());
+        final List<FieldErrorData> errors = List.of(new FieldErrorData(exception.getField(), exception.getError(),
+                exception.getValue()));
+        return handleFieldErrorInternally(ParameterType.FIELD, errors);
     }
 
     @ExceptionHandler
@@ -60,6 +85,42 @@ public class ControllerExceptionHandler {
                 .map(error -> new FieldErrorData(error.getField(), error.getDefaultMessage(), error.getRejectedValue()))
                 .toList();
         return handleFieldErrorInternally(ParameterType.FIELD, errors);
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ApiError handleNotFoundException(final NotFoundException exception) {
+        log.warn(exception.getMessage());
+        return ApiError.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .reason("The required object was not found")
+                .message(exception.getMessage())
+                .timestamp(LocalDateTime.now(clock))
+                .build();
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiError handleDatabaseConstraintViolation(final DataIntegrityViolationException exception) {
+        log.warn(exception.getMessage());
+        return ApiError.builder()
+                .status(HttpStatus.CONFLICT)
+                .reason("Integrity constraint has been violated")
+                .message(exception.getMessage())
+                .timestamp(LocalDateTime.now(clock))
+                .build();
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiError handleNotPossibleException(final NotPossibleException exception) {
+        log.warn(exception.getMessage());
+        return ApiError.builder()
+                .status(HttpStatus.CONFLICT)
+                .reason("For the requested operation the conditions are not met")
+                .message(exception.getMessage())
+                .timestamp(LocalDateTime.now(clock))
+                .build();
     }
 
     @ExceptionHandler
