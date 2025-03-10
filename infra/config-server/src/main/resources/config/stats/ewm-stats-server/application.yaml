@@ -2,7 +2,6 @@ spring:
   main:
     banner-mode: off
   datasource:
-    driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://stats-db:5432/ewm_stats
     username: root
     password: root

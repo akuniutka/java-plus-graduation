@@ -1,0 +1,20 @@
+spring:
+  main:
+    banner-mode: off
+  datasource:
+    url: jdbc:h2:mem:ewm_extra
+    username: ewm
+    password: ewm
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  sql:
+    init:
+      mode: always
+  cloud:
+    config:
+      enabled: false
+eureka:
+  client:
+    enabled: false

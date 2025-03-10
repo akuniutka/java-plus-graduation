@@ -7,9 +7,21 @@ spring:
         locator:
           enabled: true
       routes:
-        - id: ewm-main-service_route
-          uri: lb://ewm-main-service
+        - id: user-service_route
+          uri: lb://user-service
           predicates:
-            - Path=/**
+            - Path=/admin/users/**
+        - id: requests-service_route
+          uri: lb://request-service
+          predicates:
+            - Path=/users/*/events/*/requests/**, /users/*/requests/**
+        - id: event-service_route
+          uri: lb://event-service
+          predicates:
+            - Path=/admin/events/**, /users/*/events/**, /events/**, /categories/**, /admin/categories/**
+        - id: extra-services_route
+          uri: lb://extra-services
+          predicates:
+            - Path=/admin/compilations/**, /compilations/**, /users/*/subscriptions/**
 server:
   port: 8080

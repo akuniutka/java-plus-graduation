@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:ewm-dev
+    username: dev
+    password: dev
+management:
+  endpoints.web.exposure.include: loggers
+  endpoint.loggers.enabled: true
+server:
+  port: 9090
