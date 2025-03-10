@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.ewm.common.HttpRequestResponseLogger;
 import ru.practicum.ewm.event.dto.EventShortDto;
 import ru.practicum.ewm.subscription.dto.EventFilter;
 import ru.practicum.ewm.subscription.service.SubscriptionService;
@@ -23,7 +22,7 @@ import java.util.List;
 @RequestMapping("/users/{userId}/subscriptions")
 @RequiredArgsConstructor
 @Slf4j
-public class PrivateSubscriptionController extends HttpRequestResponseLogger {
+public class PrivateSubscriptionController {
 
     private static final boolean DEFAULT_ONLY_AVAILABLE = false;
     private static final int DEFAULT_PAGE_FROM = 0;

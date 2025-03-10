@@ -1,20 +1,22 @@
-package ru.practicum.ewm.stats;
+package ru.practicum.ewm.stats.repository;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import ru.practicum.ewm.stats.model.EndpointHit;
+import ru.practicum.ewm.stats.model.ViewStats;
 
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static ru.practicum.ewm.stats.TestUtils.APP;
-import static ru.practicum.ewm.stats.TestUtils.END;
-import static ru.practicum.ewm.stats.TestUtils.ENDPOINT;
-import static ru.practicum.ewm.stats.TestUtils.IP;
-import static ru.practicum.ewm.stats.TestUtils.START;
-import static ru.practicum.ewm.stats.TestUtils.TIMESTAMP;
-import static ru.practicum.ewm.stats.TestUtils.equalTo;
+import static ru.practicum.ewm.stats.util.TestUtils.APP;
+import static ru.practicum.ewm.stats.util.TestUtils.END;
+import static ru.practicum.ewm.stats.util.TestUtils.ENDPOINT;
+import static ru.practicum.ewm.stats.util.TestUtils.IP;
+import static ru.practicum.ewm.stats.util.TestUtils.START;
+import static ru.practicum.ewm.stats.util.TestUtils.TIMESTAMP;
+import static ru.practicum.ewm.stats.util.TestUtils.equalTo;
 
 @DataJpaTest
 class StatsRepositoryIT {

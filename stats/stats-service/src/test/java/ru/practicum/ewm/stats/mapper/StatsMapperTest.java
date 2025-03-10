@@ -1,7 +1,10 @@
-package ru.practicum.ewm.stats;
+package ru.practicum.ewm.stats.mapper;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.practicum.ewm.stats.ViewStatsDto;
+import ru.practicum.ewm.stats.model.EndpointHit;
+import ru.practicum.ewm.stats.model.ViewStats;
 
 import java.util.List;
 
@@ -9,11 +12,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
-import static ru.practicum.ewm.stats.TestUtils.deepEqualTo;
-import static ru.practicum.ewm.stats.TestUtils.makeTestEndpointHit;
-import static ru.practicum.ewm.stats.TestUtils.makeTestEndpointHitDto;
-import static ru.practicum.ewm.stats.TestUtils.makeTestViewStats;
-import static ru.practicum.ewm.stats.TestUtils.makeTestViewStatsDto;
+import static ru.practicum.ewm.stats.util.TestUtils.deepEqualTo;
+import static ru.practicum.ewm.stats.util.TestUtils.makeTestEndpointHit;
+import static ru.practicum.ewm.stats.util.TestUtils.makeTestEndpointHitDto;
+import static ru.practicum.ewm.stats.util.TestUtils.makeTestViewStats;
+import static ru.practicum.ewm.stats.util.TestUtils.makeTestViewStatsDto;
 
 class StatsMapperTest {
 

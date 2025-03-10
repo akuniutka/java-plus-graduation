@@ -1,13 +1,17 @@
-package ru.practicum.ewm.stats;
+package ru.practicum.ewm.stats.mapper;
 
 import org.springframework.stereotype.Component;
+import ru.practicum.ewm.stats.model.EndpointHit;
+import ru.practicum.ewm.stats.EndpointHitDto;
+import ru.practicum.ewm.stats.model.ViewStats;
+import ru.practicum.ewm.stats.ViewStatsDto;
 
 import java.util.List;
 
 @Component
-class StatsMapper {
+public class StatsMapper {
 
-    EndpointHit mapToEndpointHit(final EndpointHitDto dto) {
+    public EndpointHit mapToEndpointHit(final EndpointHitDto dto) {
         if (dto == null) {
             return null;
         }
@@ -19,7 +23,7 @@ class StatsMapper {
         return endpointHit;
     }
 
-    ViewStatsDto mapToDto(final ViewStats viewStats) {
+    public ViewStatsDto mapToDto(final ViewStats viewStats) {
         if (viewStats == null) {
             return null;
         }
@@ -30,7 +34,7 @@ class StatsMapper {
                 .build();
     }
 
-    List<ViewStatsDto> mapToDto(final List<ViewStats> viewStats) {
+    public List<ViewStatsDto> mapToDto(final List<ViewStats> viewStats) {
         if (viewStats == null) {
             return null;
         }

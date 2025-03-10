@@ -1,4 +1,4 @@
-package ru.practicum.ewm.stats;
+package ru.practicum.ewm.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.JSONException;
@@ -10,7 +10,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import ru.practicum.ewm.exception.ApiError;
+import ru.practicum.ewm.stats.util.LogListener;
 
 import java.io.IOException;
 import java.time.Clock;
@@ -20,7 +20,7 @@ import java.time.ZoneId;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static ru.practicum.ewm.stats.TestUtils.assertLogs;
+import static ru.practicum.ewm.stats.util.TestUtils.assertLogs;
 
 class ControllerExceptionHandlerTest {
 

@@ -1,13 +1,15 @@
-package ru.practicum.ewm.stats;
+package ru.practicum.ewm.stats.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import ru.practicum.ewm.stats.model.EndpointHit;
+import ru.practicum.ewm.stats.model.ViewStats;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-interface StatsRepository extends JpaRepository<EndpointHit, Long> {
+public interface StatsRepository extends JpaRepository<EndpointHit, Long> {
 
     @Query("select h.app as app, h.uri as uri, count(h.ip) as hits from EndpointHit h"
             + " where h.timestamp between :start and :end group by h.app, h.uri"

@@ -1,13 +1,14 @@
-package ru.practicum.ewm.stats;
+package ru.practicum.ewm.stats.service;
 
-import jakarta.validation.Valid;
+import ru.practicum.ewm.stats.model.ViewStats;
+import ru.practicum.ewm.stats.model.EndpointHit;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 public interface StatsService {
 
-    void addEndpointHit(@Valid EndpointHit endpointHit);
+    void addEndpointHit(EndpointHit endpointHit);
 
     List<ViewStats> getViewStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique);
 }
