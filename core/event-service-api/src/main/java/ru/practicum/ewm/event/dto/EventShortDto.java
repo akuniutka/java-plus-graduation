@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Builder(toBuilder = true)
 public record EventShortDto(
 
-        Long id,
+        long id,
         UserShortDto initiator,
         String title,
         CategoryDto category,
@@ -19,8 +19,8 @@ public record EventShortDto(
         LocalDateTime eventDate,
 
         String annotation,
-        Boolean paid,
-        Long confirmedRequests,
-        Long views
+        boolean paid,
+        long confirmedRequests,
+        long views
 ) {
 }

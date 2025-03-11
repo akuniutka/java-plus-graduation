@@ -15,5 +15,5 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
     Optional<Subscription> findBySubscriberIdAndPublisherId(long subscriberId, long publisherId);
 
     @Query("SELECT s.publisherId FROM Subscription s WHERE s.subscriberId = :subscriberId")
-    List<Long> findPublisherIdsBySubscriberId(@Param("subscriberId") Long subscriberId);
+    List<Long> findPublisherIdsBySubscriberId(@Param("subscriberId") long subscriberId);
 }

@@ -26,10 +26,7 @@ public class EventMapper {
     private final Clock clock;
     private final CategoryMapper categoryMapper;
 
-    public Event mapToEvent(final Long userId, final NewEventDto dto) {
-        if (userId == null && dto == null) {
-            return null;
-        }
+    public Event mapToEvent(final long userId, final NewEventDto dto) {
         final Event event = new Event();
         event.setInitiatorId(userId);
         if (dto != null) {

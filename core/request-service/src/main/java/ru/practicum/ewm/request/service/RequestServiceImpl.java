@@ -124,7 +124,7 @@ class RequestServiceImpl implements RequestService {
         requireUserExists(userId);
         Request request = repository.findById(requestId)
                 .orElseThrow(() -> new NotFoundException(Request.class, requestId));
-        if (!request.getRequesterId().equals(userId)) {
+        if (request.getRequesterId() != userId) {
             throw new NotPossibleException("Request is not by user");
         }
         request.setStatus(RequestState.CANCELED);

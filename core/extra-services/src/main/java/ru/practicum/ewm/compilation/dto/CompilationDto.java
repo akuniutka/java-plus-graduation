@@ -8,7 +8,7 @@ import java.util.Set;
 @Builder
 public record CompilationDto(
 
-        Long id,
+        long id,
         String title,
         Set<EventShortDto> events,
         boolean pinned

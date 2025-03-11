@@ -37,5 +37,5 @@ public class Compilation {
     @Transient
     private Set<EventShortDto> events;
 
-    private Boolean pinned;
+    private boolean pinned;
 }
