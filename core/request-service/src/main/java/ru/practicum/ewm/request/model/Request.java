@@ -24,11 +24,9 @@ public class Request {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
-    private Long requesterId;
+    private long requesterId;
 
-    @NotNull
-    private Long eventId;
+    private long eventId;
 
     @CreationTimestamp
     private LocalDateTime created;

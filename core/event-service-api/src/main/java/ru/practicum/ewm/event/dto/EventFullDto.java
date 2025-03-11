@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Builder(toBuilder = true)
 public record EventFullDto(
 
-        Long id,
+        long id,
         UserShortDto initiator,
         String title,
         CategoryDto category,
@@ -22,11 +22,11 @@ public record EventFullDto(
         LocationDto location,
         String annotation,
         String description,
-        Long participantLimit,
-        Boolean paid,
-        Boolean requestModeration,
-        Long confirmedRequests,
-        Long views,
+        long participantLimit,
+        boolean paid,
+        boolean requestModeration,
+        long confirmedRequests,
+        long views,
 
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         LocalDateTime createdOn,

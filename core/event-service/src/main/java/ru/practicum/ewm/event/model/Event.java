@@ -32,8 +32,7 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
-    private Long initiatorId;
+    private long initiatorId;
 
     @Transient
     private UserShortDto initiator;
