@@ -1,0 +1,18 @@
+{
+  "status": "BAD_REQUEST",
+  "reason": "Wrong request format",
+  "message": "There are errors in parameters 'from', 'size'",
+  "errors": [
+    {
+      "field": "from",
+      "error": "must be greater than or equal to 0",
+      "value": -1
+    },
+    {
+      "field": "size",
+      "error": "must be greater than 0",
+      "value": 0
+    }
+  ],
+  "timestamp": "2000-01-01 00:00:01"
+}
