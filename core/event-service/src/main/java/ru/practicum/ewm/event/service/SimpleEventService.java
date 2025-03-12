@@ -65,7 +65,7 @@ public class SimpleEventService implements EventService {
     public Event add(final Event event) {
         validateEventDate(event.getEventDate(), userTimeout);
         requireUserExist(event.getInitiatorId());
-        event.setCategory(fetchCategory(event.getCategory()));
+        event.setCategory(getCategoryById(event.getCategory().getId()));
         final Event savedEvent = repository.save(event);
         log.info("Added new event: id = {}, title = {}, eventDate = {}", savedEvent.getId(), savedEvent.getTitle(),
                 savedEvent.getEventDate());
@@ -223,7 +223,8 @@ public class SimpleEventService implements EventService {
 
     private void applyPatch(final Event event, final EventPatch patch) {
         Optional.ofNullable(patch.title()).ifPresent(event::setTitle);
-        Optional.ofNullable(patch.category()).map(this::fetchCategory).ifPresent(event::setCategory);
+        Optional.ofNullable(patch.category()).map(category -> getCategoryById(category.getId()))
+                .ifPresent(event::setCategory);
         Optional.ofNullable(patch.eventDate()).ifPresent(event::setEventDate);
         Optional.ofNullable(patch.location()).ifPresent(event::setLocation);
         Optional.ofNullable(patch.annotation()).ifPresent(event::setAnnotation);
@@ -241,11 +242,8 @@ public class SimpleEventService implements EventService {
         throw new NotFoundException("User", userId);
     }
 
-    private Category fetchCategory(final Category category) {
-        if (category == null || category.getId() == null) {
-            throw new AssertionError();
-        }
-        return categoryService.getById(category.getId());
+    private Category getCategoryById(final long categoryId) {
+        return categoryService.getById(categoryId);
     }
 
     private void requireDatesInRightOrder(final LocalDateTime rangeStart, final LocalDateTime rangeEnd) {
