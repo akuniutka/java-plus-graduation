@@ -1,0 +1,51 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: user-service_route
+          uri: lb://user-service
+          predicates:
+            - Path=/admin/users/**
+        - id: requests-service_route
+          uri: lb://request-service
+          predicates:
+            - Path=/users/*/events/*/requests/**, /users/*/requests/**
+        - id: event-service_route
+          uri: lb://event-service
+          predicates:
+            - Path=/admin/events/**, /users/*/events/**, /events/**, /categories/**, /admin/categories/**
+        - id: extra-services_route
+          uri: lb://extra-services
+          predicates:
+            - Path=/admin/compilations/**, /compilations/**, /users/*/subscriptions/**
+
+        - id: user-service-actuator_route
+          uri: lb://user-service
+          predicates:
+            - Path=/user-service/actuator/**
+          filters:
+            - RewritePath=/user-service(?<segment>/?.*), $\{segment}
+        - id: event-service-actuator_route
+          uri: lb://event-service
+          predicates:
+            - Path=/event-service/actuator/**
+          filters:
+            - RewritePath=/event-service(?<segment>/?.*), $\{segment}
+        - id: request-service-actuator_route
+          uri: lb://request-service
+          predicates:
+            - Path=/request-service/actuator/**
+          filters:
+            - RewritePath=/request-service(?<segment>/?.*), $\{segment}
+        - id: extra-services-actuator_route
+          uri: lb://extra-services
+          predicates:
+            - Path=/extra-services/actuator/**
+          filters:
+            - RewritePath=/extra-services(?<segment>/?.*), $\{segment}
+        - id: ewm-stats-server-actuator_route
+          uri: lb://ewm-stats-server
+          predicates:
+            - Path=/ewm-stats-server/actuator/**
+          filters:
+            - RewritePath=/ewm-stats-server(?<segment>/?.*), $\{segment}
