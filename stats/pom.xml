@@ -14,6 +14,9 @@
     <modules>
         <module>stats-dto</module>
         <module>stats-service</module>
+        <module>collector-service</module>
+        <module>collector-service-api</module>
+        <module>avro-schemas</module>
     </modules>
 
 </project>

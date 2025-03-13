@@ -126,8 +126,8 @@ public class RequestRichEventServiceFacade implements EventService {
     }
 
     @Override
-    public Event getByIdAndPublished(final long id) {
-        final Event event = service.getByIdAndPublished(id);
+    public Event getByIdAndPublished(final long requesterId, final long eventId) {
+        final Event event = service.getByIdAndPublished(requesterId, eventId);
         fetchConfirmedRequests(event);
         return event;
     }

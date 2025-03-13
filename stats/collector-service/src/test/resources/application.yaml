@@ -1,0 +1,12 @@
+spring:
+  main:
+    banner-mode: off
+  cloud:
+    config:
+      enabled: false
+kafka:
+  topics:
+    actions: stats.user-actions.v1
+eureka:
+  client:
+    enabled: false

@@ -26,7 +26,7 @@ public interface EventService {
 
     Optional<Event> findByIdAndInitiatorId(long id, long initiatorId);
 
-    Event getByIdAndPublished(long id);
+    Event getByIdAndPublished(long requesterId, long eventId);
 
     Event getByIdAndInitiatorId(long id, long initiatorId);
 

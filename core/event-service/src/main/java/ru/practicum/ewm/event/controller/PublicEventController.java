@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.ewm.event.dto.EventFullDto;
@@ -52,12 +53,13 @@ public class PublicEventController {
     }
 
     @GetMapping("/{eventId}")
-    public EventFullDto getByIdAndPublished(@PathVariable final long eventId, final HttpServletRequest httpRequest) {
-        log.info("Received request for event: id = {}", eventId);
-        final Event event = service.getByIdAndPublished(eventId);
+    public EventFullDto getByIdAndPublished(@PathVariable final long eventId, final HttpServletRequest httpRequest,
+            @RequestHeader("X-EWM-USER-ID") final long userId) {
+        log.info("Received request for event: userId = {}, eventId = {}", userId, eventId);
+        final Event event = service.getByIdAndPublished(userId, eventId);
         final EventFullDto dto = mapper.mapToFullDto(event);
         saveHit(httpRequest.getRequestURI(), httpRequest.getRemoteAddr());
-        log.info("Responded with requested event: id = {}", dto.id());
+        log.info("Responded with requested event: eventId = {}", dto.id());
         log.debug("Requested event = {}", dto);
         return dto;
     }
