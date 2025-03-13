@@ -1,7 +1,9 @@
 package ru.practicum.ewm.event.service;
 
+import com.google.protobuf.Timestamp;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import lombok.extern.slf4j.Slf4j;
+import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -9,6 +11,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.category.service.CategoryService;
+import ru.practicum.ewm.collector.message.ActionTypeProto;
+import ru.practicum.ewm.collector.message.UserActionProto;
+import ru.practicum.ewm.collector.service.UserActionControllerGrpc;
 import ru.practicum.ewm.event.dto.AdminEventFilter;
 import ru.practicum.ewm.event.dto.InternalEventFilter;
 import ru.practicum.ewm.event.dto.PublicEventFilter;
@@ -25,6 +30,7 @@ import ru.practicum.ewm.user.client.UserClient;
 
 import java.time.Clock;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -44,6 +50,9 @@ public class SimpleEventService implements EventService {
     private final EventRepository repository;
     private final Duration adminTimeout;
     private final Duration userTimeout;
+
+    @GrpcClient("collector-service")
+    private UserActionControllerGrpc.UserActionControllerBlockingStub collectorClient;
 
     public SimpleEventService(
             final Clock clock,
@@ -154,9 +163,13 @@ public class SimpleEventService implements EventService {
     }
 
     @Override
-    public Event getByIdAndPublished(final long id) {
-        return repository.findByIdAndState(id, EventState.PUBLISHED)
-                .orElseThrow(() -> new NotFoundException(Event.class, id));
+    public Event getByIdAndPublished(final long requesterId, final long eventId) {
+        final Event event = repository.findByIdAndState(eventId, EventState.PUBLISHED)
+                .orElseThrow(() -> new NotFoundException(Event.class, eventId));
+        if (requesterId != event.getInitiatorId()) {
+            sendEventViewToCollector(requesterId, eventId);
+        }
+        return event;
     }
 
     @Override
@@ -293,5 +306,22 @@ public class SimpleEventService implements EventService {
         Optional.ofNullable(filter.rangeStart()).map(event.eventDate::goe).ifPresent(predicates::add);
         Optional.ofNullable(filter.rangeEnd()).map(event.eventDate::loe).ifPresent(predicates::add);
         return predicates.stream().reduce(BooleanExpression::and);
+    }
+
+    private void sendEventViewToCollector(final long requesterId, final long eventId) {
+        final Instant now = Instant.now(clock);
+        final UserActionProto userActionProto = UserActionProto.newBuilder()
+                .setUserId(requesterId)
+                .setEventId(eventId)
+                .setActionType(ActionTypeProto.ACTION_VIEW)
+                .setTimestamp(Timestamp.newBuilder()
+                        .setSeconds(now.getEpochSecond())
+                        .setNanos(now.getNano())
+                        .build())
+                .build();
+        collectorClient.collectUserAction(userActionProto);
+        log.info("Sent user action to collector service: userId = {}, eventId = {}, actionType = {}",
+                userActionProto.getUserId(), userActionProto.getEventId(), userActionProto.getActionType());
+        log.debug("Sent action = {}", userActionProto);
     }
 }
