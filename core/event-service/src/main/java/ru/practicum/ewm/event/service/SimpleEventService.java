@@ -164,6 +164,7 @@ public class SimpleEventService implements EventService {
 
     @Override
     public Event getByIdAndPublished(final long requesterId, final long eventId) {
+        requireUserExist(requesterId);
         final Event event = repository.findByIdAndState(eventId, EventState.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException(Event.class, eventId));
         if (requesterId != event.getInitiatorId()) {
