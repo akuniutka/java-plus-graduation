@@ -16,6 +16,8 @@ public interface RequestService {
 
     List<Request> findAllByInitiatorIdAndEventId(long initiatorId, long eventId);
 
+    boolean existsByRequesterIdAndStatusConfirmed(long requesterId);
+
     EventRequestStatusDto processRequests(long id, UpdateEventRequestStatusDto dto, long userId);
 
     Request cancel(long userId, long requestId);

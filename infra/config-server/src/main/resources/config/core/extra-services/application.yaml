@@ -16,6 +16,13 @@ spring:
     openfeign:
       circuitbreaker:
         enabled: true
+grpc:
+  client:
+    collector-service:
+      address: 'discovery:///collector-service'
+      enable-keep-alive: true
+      keep-alive-without-calls: true
+      negotiation-type: plaintext
 resilience4j:
   circuitbreaker:
     configs:
@@ -31,6 +38,13 @@ resilience4j:
         minimumNumberOfCalls: 5
         automaticTransitionFromOpenToHalfOpenEnabled: true
       event-service:
+        slidingWindowSize: 10
+        waitDurationInOpenState: 10000
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowsType: COUNT_BASED
+        minimumNumberOfCalls: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+      request-service:
         slidingWindowSize: 10
         waitDurationInOpenState: 10000
         permittedNumberOfCallsInHalfOpenState: 3

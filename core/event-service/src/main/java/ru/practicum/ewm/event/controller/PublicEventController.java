@@ -28,6 +28,7 @@ import java.util.List;
 @Slf4j
 public class PublicEventController {
 
+    private static final String USER_HEADER = "X-EWM-USER-ID";
     private static final boolean DEFAULT_ONLY_AVAILABLE = false;
     private static final int DEFAULT_PAGE_FROM = 0;
     private static final int DEFAULT_PAGE_SIZE = 10;
@@ -54,7 +55,7 @@ public class PublicEventController {
 
     @GetMapping("/{eventId}")
     public EventFullDto getByIdAndPublished(@PathVariable final long eventId, final HttpServletRequest httpRequest,
-            @RequestHeader("X-EWM-USER-ID") final long userId) {
+            @RequestHeader(USER_HEADER) final long userId) {
         log.info("Received request for event: userId = {}, eventId = {}", userId, eventId);
         final Event event = service.getByIdAndPublished(userId, eventId);
         final EventFullDto dto = mapper.mapToFullDto(event);
