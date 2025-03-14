@@ -159,6 +159,7 @@ public class EventMapper {
         return EventCondensedDto.builder()
                 .id(event.getId())
                 .initiatorId(event.getInitiatorId())
+                .eventDate(event.getEventDate())
                 .participantLimit(event.getParticipantLimit())
                 .requestModeration(event.isRequestModeration())
                 .state(event.getState())

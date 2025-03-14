@@ -21,6 +21,8 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     List<Request> findAllByEventIdAndStatus(long eventId, RequestState status);
 
+    boolean existsByRequesterIdAndStatus(long requesterId, RequestState status);
+
     @Query("select r.eventId as id, count(r.id) as requests from Request r "
             + "where r.eventId in :ids and r.status = :status group by r.eventId")
     List<RequestStats> getRequestStats(@Param("ids") Set<Long> ids, @Param("status") RequestState status);

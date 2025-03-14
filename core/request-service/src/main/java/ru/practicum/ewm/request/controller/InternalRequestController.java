@@ -18,6 +18,15 @@ public class InternalRequestController implements RequestOperations {
     private final RequestService service;
 
     @Override
+    public boolean existsByRequesterIdAndStatusConfirmed(final long requesterId) {
+        log.info("Received request to check confirmed participation request existence: requesterId = {}", requesterId);
+        final boolean exists = service.existsByRequesterIdAndStatusConfirmed(requesterId);
+        log.info("Responded to confirmed participation request existence check: requesterId = {}, exists = {}",
+                requesterId, exists);
+        return exists;
+    }
+
+    @Override
     public List<RequestStats> getConfirmedRequestStats(final Set<Long> eventIds) {
         log.info("Received request for participation request stats: eventId = {}", eventIds);
         final List<RequestStats> stats = service.getConfirmedRequestStats(eventIds);

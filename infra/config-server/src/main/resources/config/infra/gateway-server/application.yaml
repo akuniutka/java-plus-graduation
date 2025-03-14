@@ -15,6 +15,10 @@ spring:
           uri: lb://request-service
           predicates:
             - Path=/users/*/events/*/requests/**, /users/*/requests/**
+        - id: like_service_route
+          uri: lb://extra-services
+          predicates:
+            - Path=/events/*/like/**
         - id: event-service_route
           uri: lb://event-service
           predicates:

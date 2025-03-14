@@ -93,6 +93,11 @@ class RequestServiceImpl implements RequestService {
     }
 
     @Override
+    public boolean existsByRequesterIdAndStatusConfirmed(final long requesterId) {
+        return repository.existsByRequesterIdAndStatus(requesterId, RequestState.CONFIRMED);
+    }
+
+    @Override
     @Transactional
     public EventRequestStatusDto processRequests(
             final long eventId,
