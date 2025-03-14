@@ -1,10 +1,15 @@
 package ru.practicum.ewm.request.service;
 
+import com.google.protobuf.Timestamp;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import ru.practicum.ewm.collector.message.ActionTypeProto;
+import ru.practicum.ewm.collector.message.UserActionProto;
+import ru.practicum.ewm.collector.service.UserActionControllerGrpc;
 import ru.practicum.ewm.event.client.EventClient;
 import ru.practicum.ewm.event.dto.EventCondensedDto;
 import ru.practicum.ewm.event.model.EventState;
@@ -20,6 +25,8 @@ import ru.practicum.ewm.request.model.RequestState;
 import ru.practicum.ewm.request.repository.RequestRepository;
 import ru.practicum.ewm.user.client.UserClient;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,6 +41,10 @@ class RequestServiceImpl implements RequestService {
     private final EventClient eventClient;
     private final RequestMapper mapper;
     private final RequestRepository repository;
+    private final Clock clock;
+
+    @GrpcClient("collector-service")
+    private UserActionControllerGrpc.UserActionControllerBlockingStub collectorClient;
 
     @Override
     public Request add(long userId, long eventId) {
@@ -65,6 +76,7 @@ class RequestServiceImpl implements RequestService {
         log.info("Added new participation request: id = {}, requesterId = {}, eventId = {}", request.getId(),
                 request.getRequesterId(), request.getEventId());
         log.debug("Participation request added = {}", request);
+        sendUserRegistrationToCollector(userId, eventId);
         return request;
     }
 
@@ -201,5 +213,22 @@ class RequestServiceImpl implements RequestService {
         log.info("Set participation requests to status {}: id = {}", status, ids);
         log.debug("Updated participation requests = {}", savedRequests);
         return savedRequests;
+    }
+
+    private void sendUserRegistrationToCollector(final long requesterId, final long eventId) {
+        final Instant now = Instant.now(clock);
+        final UserActionProto userActionProto = UserActionProto.newBuilder()
+                .setUserId(requesterId)
+                .setEventId(eventId)
+                .setActionType(ActionTypeProto.ACTION_REGISTER)
+                .setTimestamp(Timestamp.newBuilder()
+                        .setSeconds(now.getEpochSecond())
+                        .setNanos(now.getNano())
+                        .build())
+                .build();
+        collectorClient.collectUserAction(userActionProto);
+        log.info("Sent user action to collector service: userId = {}, eventId = {}, actionType= {}",
+                userActionProto.getUserId(), userActionProto.getEventId(), userActionProto.getActionType());
+        log.debug("Sent action = {}", userActionProto);
     }
 }
