@@ -88,6 +88,8 @@ services:
         condition: service_healthy
       aggregator-service:
         condition: service_healthy
+      stats-server:
+        condition: service_healthy
     networks:
       - ewm-net
     environment:
