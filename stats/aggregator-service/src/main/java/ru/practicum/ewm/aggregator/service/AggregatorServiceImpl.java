@@ -2,117 +2,81 @@ package ru.practicum.ewm.aggregator.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import ru.practicum.ewm.aggregator.model.Event;
 import ru.practicum.ewm.aggregator.model.UserAction;
-import ru.practicum.ewm.aggregator.repository.EventScoreRepository;
+import ru.practicum.ewm.aggregator.repository.EventRepository;
 import ru.practicum.ewm.aggregator.repository.MinScoreSumRepository;
-import ru.practicum.ewm.aggregator.repository.UserScoreRepository;
 import ru.practicum.ewm.configuration.KafkaTopics;
 import ru.practicum.ewm.stats.avro.EventSimilarityAvro;
 
 import java.time.Instant;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AggregatorServiceImpl implements AggregatorService {
 
+    private static final Integer PARTITION_NOT_SET = null;
+
     private final KafkaTopics kafkaTopics;
-    private final KafkaTemplate<Void, EventSimilarityAvro> kafkaTemplate;
-    private final UserScoreRepository userScoreRepository;
-    private final EventScoreRepository eventScoreRepository;
+    private final KafkaTemplate<Long, EventSimilarityAvro> kafkaTemplate;
+    private final EventRepository eventRepository;
     private final MinScoreSumRepository minScoreSumRepository;
 
     @Override
     public void aggregate(final UserAction action) {
-        final float maxScore = getMaxScore(action.userId(), action.eventId());
+        final Event event = eventRepository.getOrCreate(action.eventId());
+        final float oldScore = event.getUserScore(action.userId());
         final float newScore = action.actionType().getScore();
-        if (newScore <= maxScore) {
+        if (newScore <= oldScore) {
             log.debug("Max user's score not changed: userId = {}, eventId = {}, max score = {}, new score = {}",
-                    action.userId(), action.eventId(), maxScore, newScore);
+                    action.userId(), action.eventId(), oldScore, newScore);
             return;
         }
-        updateMaxScore(action.userId(), action.eventId(), newScore);
-        final float eventTotalScore = updateEventTotalScore(action.eventId(), newScore - maxScore);
-        final Set<Long> eventsToProcess = userScoreRepository.findEventIdByUserId(action.userId()).stream()
-                .filter(anotherEventId -> anotherEventId != action.eventId())
-                .collect(Collectors.toSet());
-        final CachedData cached = CachedData.from(action, maxScore, Math.sqrt(eventTotalScore));
+        event.setUserScore(action.userId(), newScore);
+        final List<Event> eventsToProcess = eventRepository.findByUserId(action.userId()).stream()
+                .filter(e -> e.getId() != event.getId())
+                .toList();
 
-        eventsToProcess.forEach(event -> updateMinScoreSum(event, cached));
+        eventsToProcess.forEach(e -> {
+            final float pairedUserScore = e.getUserScore(action.userId());
+            if (pairedUserScore > oldScore) {
+                float minScoreSumChange = Float.min(pairedUserScore, newScore) - oldScore;
+                float minScoreSum = minScoreSumRepository.getByEventIds(e.getId(), event.getId()) + minScoreSumChange;
+                minScoreSumRepository.save(e.getId(), event.getId(), minScoreSum);
+            }
+        });
         eventsToProcess.stream()
-                .map(event -> calculateSimilarity(event, cached))
+                .map(e -> calculateSimilarity(e, event, action.timestamp()))
                 .forEach(this::sendToKafka);
     }
 
-    private float getMaxScore(final long userId, final long eventId) {
-        return userScoreRepository.getByUserIdAndEventId(userId, eventId);
-    }
-
-    private void updateMaxScore(final long userId, final long eventId, final float newScore) {
-        userScoreRepository.save(userId, eventId, newScore);
-    }
-
-    private float updateEventTotalScore(final long eventId, final float delta) {
-        final float score = eventScoreRepository.getById(eventId) + delta;
-        eventScoreRepository.save(eventId, score);
-        return score;
-    }
-
-    private void updateMinScoreSum(final long event, final CachedData cache) {
-        final float userScore = userScoreRepository.getByUserIdAndEventId(cache.user, event);
-        if (userScore <= cache.oldScore) {
-            return;
-        }
-        float delta = Float.min(userScore, cache.newScore) - cache.oldScore;
-        final float minScoreSum = minScoreSumRepository.getByEventIds(event, cache.event) + delta;
-        minScoreSumRepository.save(event, cache.event, minScoreSum);
-    }
-
-    private EventSimilarityAvro calculateSimilarity(final long event, final CachedData cache) {
-        final float minScoreSum = minScoreSumRepository.getByEventIds(event, cache.event);
-        final float eventTotalScore = eventScoreRepository.getById(event);
-        final double rootedEventTotalScore = Math.sqrt(eventTotalScore);
-        final float similarityScore = (float) (minScoreSum / rootedEventTotalScore / cache.rootedEventTotalScore);
+    private EventSimilarityAvro calculateSimilarity(final Event eventA, final Event eventB, final Instant timestamp) {
+        final float minScoreSum = minScoreSumRepository.getByEventIds(eventA.getId(), eventB.getId());
+        final float similarityScore = (float) (minScoreSum / Math.sqrt(eventA.getScore() * eventB.getScore()));
         return EventSimilarityAvro.newBuilder()
-                .setEventA(Long.min(event, cache.event))
-                .setEventB(Long.max(event, cache.event))
+                .setEventA(Long.min(eventA.getId(), eventB.getId()))
+                .setEventB(Long.max(eventA.getId(), eventB.getId()))
                 .setScore(similarityScore)
-                .setTimestamp(cache.timestamp)
+                .setTimestamp(timestamp)
                 .build();
     }
 
     private void sendToKafka(final EventSimilarityAvro similarity) {
-        kafkaTemplate.send(kafkaTopics.similarity(), similarity);
+        final ProducerRecord<Long, EventSimilarityAvro> record = new ProducerRecord<>(
+                kafkaTopics.similarity(),
+                PARTITION_NOT_SET,
+                similarity.getTimestamp().toEpochMilli(),
+                similarity.getEventA(),
+                similarity
+        );
+        kafkaTemplate.send(record);
         log.info("Sent event similarity score to Kafka: eventA = {}, eventB = {}, score = {}",
                 similarity.getEventA(), similarity.getEventB(), similarity.getScore());
         log.debug("Sent event similarity = {}", similarity);
-    }
-
-    private record CachedData(
-
-            long user,
-            long event,
-            float oldScore,
-            float newScore,
-            double rootedEventTotalScore,
-            Instant timestamp
-    ) {
-
-        static CachedData from(final UserAction action, final float oldScore,
-                final double rootedEventTotalScore
-        ) {
-            return new CachedData(
-                    action.userId(),
-                    action.eventId(),
-                    oldScore,
-                    action.actionType().getScore(),
-                    rootedEventTotalScore,
-                    action.timestamp()
-            );
-        }
     }
 }

@@ -1,2 +1,5 @@
+grpc:
+  server:
+    port: 59090
 management:
   endpoints.web.exposure.include: health,loggers

@@ -4,8 +4,10 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
     producer:
+      key-serializer: org.apache.kafka.common.serialization.LongSerializer
       value-serializer: ru.practicum.ewm.stats.serialization.GeneralAvroSerializer
     consumer:
+      key-deserializer: org.apache.kafka.common.serialization.LongDeserializer
       value-deserializer: ru.practicum.ewm.serialization.UserActionDeserializer
       group-id: stats.aggregators
       auto-offset-reset: earliest
