@@ -53,3 +53,15 @@ spring:
             - Path=/ewm-stats-server/actuator/**
           filters:
             - RewritePath=/ewm-stats-server(?<segment>/?.*), $\{segment}
+        - id: collector-service-actuator_route
+          uri: lb://collector-service
+          predicates:
+            - Path=/collector-service/actuator/**
+          filters:
+            - RewritePath=/collector-service(?<segment>/?.*), $\{segment}
+        - id: aggregator-service-actuator_route
+          uri: lb://aggregator-service
+          predicates:
+            - Path=/aggregator-service/**
+          filters:
+            - RewritePath=/aggregator-service(?<segment>/?.*), $\{segment}
