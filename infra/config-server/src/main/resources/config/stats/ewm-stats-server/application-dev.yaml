@@ -4,7 +4,6 @@ spring:
     username: dev
     password: dev
 management:
-  endpoints.web.exposure.include: loggers
-  endpoint.loggers.enabled: true
+  endpoints.web.exposure.include: health,loggers
 server:
   port: 9090

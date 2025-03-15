@@ -86,6 +86,8 @@ services:
         condition: service_healthy
       collector-service:
         condition: service_healthy
+      aggregator-service:
+        condition: service_healthy
     networks:
       - ewm-net
     environment:
@@ -281,6 +283,26 @@ services:
   collector-service:
     build: stats/collector-service
     container_name: collector-service
+    depends_on:
+      config-server:
+        condition: service_healthy
+      kafka-init-topics:
+        condition: service_completed_successfully
+    networks:
+      - ewm-net
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_KAFKA_BOOTSTRAPSERVERS=kafka:29092
+      - SERVER_PORT=8080
+    healthcheck:
+      test: "curl --fail --silent localhost:8080/actuator/health | grep UP || exit 1"
+      timeout: 5s
+      interval: 25s
+      retries: 10
+
+  aggregator-service:
+    build: stats/aggregator-service
+    container_name: aggregator-service
     depends_on:
       config-server:
         condition: service_healthy

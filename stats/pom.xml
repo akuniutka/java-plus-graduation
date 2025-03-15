@@ -17,6 +17,7 @@
         <module>collector-service</module>
         <module>collector-service-api</module>
         <module>avro-schemas</module>
+        <module>aggregator-service</module>
     </modules>
 
 </project>
