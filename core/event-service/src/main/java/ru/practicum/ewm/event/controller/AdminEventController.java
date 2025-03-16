@@ -33,11 +33,11 @@ public class AdminEventController {
     private final EventDtoValidatorExtension validatorExtension;
 
     public AdminEventController(
-            final EventService viewRichEventServiceFacade,
+            final EventService ratingRichEventServiceFacade,
             final EventMapper mapper,
             final EventDtoValidatorExtension validatorExtension
     ) {
-        this.service = viewRichEventServiceFacade;
+        this.service = ratingRichEventServiceFacade;
         this.mapper = mapper;
         this.validatorExtension = validatorExtension;
     }

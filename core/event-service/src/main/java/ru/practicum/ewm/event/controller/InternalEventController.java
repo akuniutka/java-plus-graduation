@@ -22,11 +22,11 @@ public class InternalEventController implements EventOperations {
     private final EventMapper mapper;
 
     public InternalEventController(
-            final EventService viewRichEventServiceFacade,
+            final EventService ratingRichEventServiceFacade,
             final EventService simpleEventService,
             final EventMapper mapper
     ) {
-        this.enrichingService = viewRichEventServiceFacade;
+        this.enrichingService = ratingRichEventServiceFacade;
         this.simpleService = simpleEventService;
         this.mapper = mapper;
     }

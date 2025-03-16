@@ -33,6 +33,6 @@ public record PublicEventFilter(
 
     public enum Sort {
         EVENT_DATE,
-        VIEWS
+        RATING
     }
 }

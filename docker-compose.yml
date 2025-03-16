@@ -90,51 +90,10 @@ services:
         condition: service_healthy
       analyzer-service:
         condition: service_healthy
-      stats-server:
-        condition: service_healthy
     networks:
       - ewm-net
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
-
-  stats-server:
-    build: stats/stats-service
-    container_name: ewm-stats-server
-    ports:
-      - "9090:9090"
-    depends_on:
-      stats-db:
-        condition: service_healthy
-      config-server:
-        condition: service_healthy
-    networks:
-      - ewm-net
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/ewm-stats
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=root
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
-      - SERVER_PORT=9090
-    healthcheck:
-      test: "curl --fail --silent localhost:9090/actuator/health | grep UP || exit 1"
-      timeout: 5s
-      interval: 15s
-      retries: 10
-
-  stats-db:
-    image: postgres:16.1
-    container_name: postgres-ewm-stats-db
-    environment:
-      - POSTGRES_PASSWORD=root
-      - POSTGRES_USER=root
-      - POSTGRES_DB=ewm-stats
-    networks:
-      - ewm-net
-    healthcheck:
-      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
-      timeout: 5s
-      interval: 10s
-      retries: 15
 
   user-service:
     build: core/user-service
@@ -181,8 +140,6 @@ services:
         condition: service_healthy
       config-server:
         condition: service_healthy
-      collector-service:
-        condition: service_healthy
     networks:
       - ewm-net
     environment:
@@ -219,8 +176,6 @@ services:
       requests-db:
         condition: service_healthy
       config-server:
-        condition: service_healthy
-      collector-service:
         condition: service_healthy
     networks:
       - ewm-net
@@ -296,8 +251,6 @@ services:
         condition: service_healthy
       kafka-init-topics:
         condition: service_completed_successfully
-      aggregator-service:
-        condition: service_healthy
     networks:
       - ewm-net
     environment:
@@ -318,8 +271,6 @@ services:
         condition: service_healthy
       kafka-init-topics:
         condition: service_completed_successfully
-      analyzer-service:
-        condition: service_healthy
     networks:
       - ewm-net
     environment:

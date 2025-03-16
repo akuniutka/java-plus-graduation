@@ -21,6 +21,6 @@ public record EventShortDto(
         String annotation,
         boolean paid,
         long confirmedRequests,
-        long views
+        double rating
 ) {
 }

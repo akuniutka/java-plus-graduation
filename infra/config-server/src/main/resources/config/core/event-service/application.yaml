@@ -23,6 +23,11 @@ grpc:
       enable-keep-alive: true
       keep-alive-without-calls: true
       negotiation-type: plaintext
+    analyzer-service:
+      address: 'discovery:///analyzer-service'
+      enable-keep-alive: true
+      keep-alive-without-calls: true
+      negotiation-type: plaintext
 resilience4j:
   circuitbreaker:
     configs:
