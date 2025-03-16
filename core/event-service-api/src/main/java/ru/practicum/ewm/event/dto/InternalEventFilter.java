@@ -25,6 +25,6 @@ public class InternalEventFilter {
 
     public enum Sort {
         EVENT_DATE,
-        VIEWS
+        RATING
     }
 }

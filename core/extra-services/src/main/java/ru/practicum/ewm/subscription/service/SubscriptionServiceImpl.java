@@ -97,7 +97,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private InternalEventFilter.Sort mapSort(final EventFilter.Sort sort) {
         return switch (sort) {
             case EVENT_DATE -> InternalEventFilter.Sort.EVENT_DATE;
-            case VIEWS -> InternalEventFilter.Sort.VIEWS;
+            case RATING -> InternalEventFilter.Sort.RATING;
             case null -> null;
         };
     }

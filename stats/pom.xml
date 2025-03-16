@@ -12,14 +12,12 @@
     <artifactId>explore-with-me-stats</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>stats-dto</module>
-        <module>stats-service</module>
-        <module>collector-service</module>
-        <module>collector-service-api</module>
         <module>avro-schemas</module>
+        <module>collector-service-api</module>
+        <module>collector-service</module>
         <module>aggregator-service</module>
-        <module>analyzer-service</module>
         <module>analyzer-service-api</module>
+        <module>analyzer-service</module>
     </modules>
 
 </project>

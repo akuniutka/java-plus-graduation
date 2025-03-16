@@ -3,8 +3,11 @@ package ru.practicum.ewm.analyzer.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.practicum.ewm.analyzer.model.RecommendedEvent;
 import ru.practicum.ewm.analyzer.model.UserScore;
 import ru.practicum.ewm.analyzer.repository.UserScoreRepository;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +22,11 @@ public class UserScoreServiceImpl implements UserScoreService {
                 oldScore -> updateScoreAndSave(oldScore, newScore),
                 () -> saveUserScore(newScore)
         );
+    }
+
+    @Override
+    public List<RecommendedEvent> getEventInteractionsCount(final List<Long> eventIds) {
+        return repository.getEventInteractionsCount(eventIds);
     }
 
     private void updateScoreAndSave(final UserScore oldScore, final UserScore newScore) {

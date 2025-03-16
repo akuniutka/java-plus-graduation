@@ -1,6 +1,0 @@
-[
-  {
-    "level": "INFO",
-    "message": "Added new hit: id = 1, app = mainService, uri = endpointA, timestamp = 2000-01-31T13:30:55"
-  }
-]

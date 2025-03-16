@@ -42,11 +42,11 @@ public class PrivateEventController {
     private final EventDtoValidatorExtension validatorExtension;
 
     public PrivateEventController(
-            final EventService viewRichEventServiceFacade,
+            final EventService ratingRichEventServiceFacade,
             final EventMapper mapper,
             final EventDtoValidatorExtension validatorExtension
     ) {
-        this.service = viewRichEventServiceFacade;
+        this.service = ratingRichEventServiceFacade;
         this.mapper = mapper;
         this.validatorExtension = validatorExtension;
     }

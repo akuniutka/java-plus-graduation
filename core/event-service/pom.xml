@@ -18,11 +18,6 @@
     <dependencies>
         <dependency>
             <groupId>ru.practicum</groupId>
-            <artifactId>explore-with-me-stats-dto</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>ru.practicum</groupId>
             <artifactId>explore-with-me-user-api</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -34,6 +29,11 @@
         <dependency>
             <groupId>ru.practicum</groupId>
             <artifactId>explore-with-me-collector-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.practicum</groupId>
+            <artifactId>explore-with-me-analyzer-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
