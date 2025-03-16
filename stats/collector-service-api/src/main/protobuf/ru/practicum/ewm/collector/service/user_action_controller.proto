@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package ru.practicum.ewm.collector.message;
+package ru.practicum.ewm.collector.service;
 
 import "google/protobuf/empty.proto";
 import "ru/practicum/ewm/collector/message/user_action.proto";

@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:ewm-dev
+    username: dev
+    password: dev
+grpc:
+  server:
+    port: 59091
+management:
+  endpoints.web.exposure.include: health,loggers

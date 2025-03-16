@@ -1,8 +1,8 @@
 package ru.practicum.ewm.aggregator.service;
 
-import ru.practicum.ewm.aggregator.model.UserAction;
+import ru.practicum.ewm.aggregator.model.UserScore;
 
 public interface AggregatorService {
 
-    void aggregate(UserAction action);
+    void aggregate(UserScore score);
 }

@@ -6,7 +6,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.aggregator.model.Event;
-import ru.practicum.ewm.aggregator.model.UserAction;
+import ru.practicum.ewm.aggregator.model.UserScore;
 import ru.practicum.ewm.aggregator.repository.EventRepository;
 import ru.practicum.ewm.aggregator.repository.MinScoreSumRepository;
 import ru.practicum.ewm.configuration.KafkaTopics;
@@ -28,22 +28,22 @@ public class AggregatorServiceImpl implements AggregatorService {
     private final MinScoreSumRepository minScoreSumRepository;
 
     @Override
-    public void aggregate(final UserAction action) {
-        final Event event = eventRepository.getOrCreate(action.eventId());
-        final float oldScore = event.getUserScore(action.userId());
-        final float newScore = action.actionType().getScore();
+    public void aggregate(final UserScore userScore) {
+        final Event event = eventRepository.getOrCreate(userScore.eventId());
+        final float oldScore = event.getScoreFromUser(userScore.userId());
+        final float newScore = userScore.score();
         if (newScore <= oldScore) {
             log.debug("Max user's score not changed: userId = {}, eventId = {}, max score = {}, new score = {}",
-                    action.userId(), action.eventId(), oldScore, newScore);
+                    userScore.userId(), userScore.eventId(), oldScore, newScore);
             return;
         }
-        event.setUserScore(action.userId(), newScore);
-        final List<Event> eventsToProcess = eventRepository.findByUserId(action.userId()).stream()
+        event.setScoreFromUser(userScore.userId(), newScore);
+        final List<Event> eventsToProcess = eventRepository.findByUserId(userScore.userId()).stream()
                 .filter(e -> e.getId() != event.getId())
                 .toList();
 
         eventsToProcess.forEach(e -> {
-            final float pairedUserScore = e.getUserScore(action.userId());
+            final float pairedUserScore = e.getScoreFromUser(userScore.userId());
             if (pairedUserScore > oldScore) {
                 float minScoreSumChange = Float.min(pairedUserScore, newScore) - oldScore;
                 float minScoreSum = minScoreSumRepository.getByEventIds(e.getId(), event.getId()) + minScoreSumChange;
@@ -51,7 +51,7 @@ public class AggregatorServiceImpl implements AggregatorService {
             }
         });
         eventsToProcess.stream()
-                .map(e -> calculateSimilarity(e, event, action.timestamp()))
+                .map(e -> calculateSimilarity(e, event, userScore.timestamp()))
                 .forEach(this::sendToKafka);
     }
 

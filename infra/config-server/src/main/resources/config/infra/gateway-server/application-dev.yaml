@@ -65,3 +65,9 @@ spring:
             - Path=/aggregator-service/**
           filters:
             - RewritePath=/aggregator-service(?<segment>/?.*), $\{segment}
+        - id: analyzer-service-actuator_route
+          uri: lb://analyzer-service
+          predicates:
+            - Path=/analyzer-service/**
+          filters:
+            - RewritePath=/analyzer-service(?<segment>/?.*), $\{segment}
