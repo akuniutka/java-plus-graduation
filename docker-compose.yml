@@ -88,6 +88,8 @@ services:
         condition: service_healthy
       aggregator-service:
         condition: service_healthy
+      analyzer-service:
+        condition: service_healthy
       stats-server:
         condition: service_healthy
     networks:
@@ -179,6 +181,8 @@ services:
         condition: service_healthy
       config-server:
         condition: service_healthy
+      collector-service:
+        condition: service_healthy
     networks:
       - ewm-net
     environment:
@@ -215,6 +219,8 @@ services:
       requests-db:
         condition: service_healthy
       config-server:
+        condition: service_healthy
+      collector-service:
         condition: service_healthy
     networks:
       - ewm-net
@@ -290,6 +296,8 @@ services:
         condition: service_healthy
       kafka-init-topics:
         condition: service_completed_successfully
+      aggregator-service:
+        condition: service_healthy
     networks:
       - ewm-net
     environment:
@@ -310,6 +318,8 @@ services:
         condition: service_healthy
       kafka-init-topics:
         condition: service_completed_successfully
+      analyzer-service:
+        condition: service_healthy
     networks:
       - ewm-net
     environment:
@@ -321,6 +331,46 @@ services:
       timeout: 5s
       interval: 25s
       retries: 10
+
+  analyzer-service:
+    build: stats/analyzer-service
+    container_name: analyzer-service
+    depends_on:
+      analyzer-db:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      kafka-init-topics:
+        condition: service_completed_successfully
+    networks:
+      - ewm-net
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://analyzer-db:5432/analyzer
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_KAFKA_BOOTSTRAPSERVERS=kafka:29092
+      - SERVER_PORT=8080
+    healthcheck:
+      test: "curl --fail --silent localhost:8080/actuator/health | grep UP || exit 1"
+      timeout: 5s
+      interval: 25s
+      retries: 10
+
+  analyzer-db:
+    image: postgres:16.1
+    container_name: postgres-ewm-analyzer-db
+    environment:
+      - POSTGRES_DB=analyzer
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+    networks:
+      - ewm-net
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 10s
+      retries: 15
 
 networks:
   ewm-net:

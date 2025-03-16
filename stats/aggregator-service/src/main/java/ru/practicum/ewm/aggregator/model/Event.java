@@ -22,7 +22,7 @@ public class Event {
         return userScores.containsKey(userId);
     }
 
-    public void setUserScore(final long userId, final float score) {
+    public void setScoreFromUser(final long userId, final float score) {
         final Float oldScore = userScores.put(userId, score);
         if (oldScore == null) {
             totalScore += score;
@@ -31,7 +31,7 @@ public class Event {
         }
     }
 
-    public float getUserScore(final long userId) {
+    public float getScoreFromUser(final long userId) {
         return userScores.getOrDefault(userId, 0.0f);
     }
 

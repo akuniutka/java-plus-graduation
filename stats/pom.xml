@@ -18,6 +18,8 @@
         <module>collector-service-api</module>
         <module>avro-schemas</module>
         <module>aggregator-service</module>
+        <module>analyzer-service</module>
+        <module>analyzer-service-api</module>
     </modules>
 
 </project>
