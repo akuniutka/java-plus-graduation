@@ -25,6 +25,11 @@ public class UserScoreServiceImpl implements UserScoreService {
     }
 
     @Override
+    public List<UserScore> findAllByUserId(final long userId) {
+        return repository.findAllByUserId(userId);
+    }
+
+    @Override
     public List<RecommendedEvent> getEventInteractionsCount(final List<Long> eventIds) {
         return repository.getEventInteractionsCount(eventIds);
     }

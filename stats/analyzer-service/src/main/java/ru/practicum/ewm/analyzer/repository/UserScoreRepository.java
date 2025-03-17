@@ -13,6 +13,8 @@ public interface UserScoreRepository extends JpaRepository<UserScore, Long> {
 
     Optional<UserScore> findByEventIdAndUserId(long eventId, long userId);
 
+    List<UserScore> findAllByUserId(long userId);
+
     @Query("select u.eventId as eventId, sum(u.score) as score from UserScore u where u.eventId in :eventIds group by u.eventId")
     List<RecommendedEvent> getEventInteractionsCount(@Param("eventIds") List<Long> eventIds);
 }
