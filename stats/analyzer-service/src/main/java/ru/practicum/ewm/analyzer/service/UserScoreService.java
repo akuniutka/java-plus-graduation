@@ -9,5 +9,7 @@ public interface UserScoreService {
 
     void updateUserScore(UserScore newScore);
 
+    List<UserScore> findAllByUserId(long userId);
+
     List<RecommendedEvent> getEventInteractionsCount(List<Long> eventIds);
 }
