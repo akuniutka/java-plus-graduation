@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.PublicEventFilter;
@@ -58,6 +59,19 @@ public class PublicEventController {
         final List<EventShortDto> dtos = mapper.mapToShortDto(events);
         log.info("Responded with requested events: filter = {}", filter);
         log.debug("Requested events = {}", dtos);
+        return dtos;
+    }
+
+    @GetMapping("/recommendations")
+    public List<EventShortDto> getRecommendations(
+            @RequestHeader(USER_HEADER) final long userId,
+            @RequestParam(defaultValue = "10") final int maxResults
+    ) {
+        log.info("Received request for recommendations: userId = {}, maxResults = {}", userId, maxResults);
+        final List<Event> events = service.getRecommendationsForUser(userId, maxResults);
+        final List<EventShortDto> dtos = mapper.mapToShortDto(events);
+        log.info("Responded with requested recommendations: userId = {}, maxResults = {}", userId, maxResults);
+        log.debug("Requested recommendations = {}", dtos);
         return dtos;
     }
 

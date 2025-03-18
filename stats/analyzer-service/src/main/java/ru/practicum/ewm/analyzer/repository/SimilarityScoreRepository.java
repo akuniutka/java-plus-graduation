@@ -1,24 +1,51 @@
 package ru.practicum.ewm.analyzer.repository;
 
-import jakarta.persistence.QueryHint;
-import org.hibernate.jpa.AvailableHints;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 import ru.practicum.ewm.analyzer.model.RecommendedEvent;
 import ru.practicum.ewm.analyzer.model.SimilarityScore;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 public interface SimilarityScoreRepository extends JpaRepository<SimilarityScore, Long> {
 
     Optional<SimilarityScore> findByEventAIdAndEventBId(long eventAId, long eventBId);
 
-    @Query("select s.eventAId + s.eventBId - :eventId as eventId, s.score as score from SimilarityScore s "
-            + "where s.eventAId = :eventId or s.eventBId = :eventId "
-            + "order by s.score desc")
-    @QueryHints(@QueryHint(name = AvailableHints.HINT_FETCH_SIZE, value = "25"))
-    Stream<RecommendedEvent> findAllByEventIdOrderBySimilarityDesc(@Param("eventId") long eventId);
+    @Query("select s.eventBId as eventId, s.score as score "
+            + "from SimilarityScore as s "
+            + "where s.eventAId = :sampleEventId "
+            + "and s.eventBId not in (select u.eventId from UserScore as u where u.userId = :requesterId) "
+            + "order by score desc "
+            + "limit :maxResults")
+    List<RecommendedEvent> findNewSimilarEvents(
+            @Param("requesterId") long requesterId,
+            @Param("sampleEventId") long sampleEventId,
+            @Param("maxResults") int maxResults
+    );
+
+    @Query("select s.eventBId as eventId, max(s.score) as score "
+            + "from SimilarityScore as s "
+            + "where s.eventAId in (select u.eventId from UserScore as u where u.userId = :userId) "
+            + "and s.eventBId not in (select u.eventId from UserScore as u where u.userId = :userId) "
+            + "group by eventId "
+            + "order by score desc "
+            + "limit :maxResults")
+    List<RecommendedEvent> findNewSimilarEvents(
+            @Param("userId") long userId,
+            @Param("maxResults") int maxResults
+    );
+
+    @Query("select s.eventAId as eventId, sum(u.score * s.score) / sum(s.score) as score "
+            + "from SimilarityScore as s "
+            + "inner join UserScore as u on u.userId = :userId and s.eventBId = u.eventId "
+            + "where s.eventAId in :eventIds "
+            + "group by eventId "
+            + "order by score desc")
+    List<RecommendedEvent> findAllWithPredictedScore(
+            @Param("eventIds") Collection<Long> eventIds,
+            @Param("userId") long userId
+    );
 }

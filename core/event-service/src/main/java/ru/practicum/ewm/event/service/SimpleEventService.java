@@ -9,6 +9,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import ru.practicum.ewm.analyzer.client.AnalyzerClient;
+import ru.practicum.ewm.analyzer.message.RecommendedEventProto;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.category.service.CategoryService;
 import ru.practicum.ewm.collector.message.ActionTypeProto;
@@ -35,7 +37,10 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -46,6 +51,7 @@ public class SimpleEventService implements EventService {
 
     private final Clock clock;
     private final UserClient userClient;
+    private final AnalyzerClient analyzerClient;
     private final CategoryService categoryService;
     private final EventRepository repository;
     private final Duration adminTimeout;
@@ -57,6 +63,7 @@ public class SimpleEventService implements EventService {
     public SimpleEventService(
             final Clock clock,
             final UserClient userClient,
+            final AnalyzerClient analyzerClient,
             final CategoryService categoryService,
             final EventRepository repository,
             @Value("${ewm.timeout.admin}") final Duration adminTimeout,
@@ -64,6 +71,7 @@ public class SimpleEventService implements EventService {
     ) {
         this.clock = clock;
         this.userClient = userClient;
+        this.analyzerClient = analyzerClient;
         this.categoryService = categoryService;
         this.repository = repository;
         this.adminTimeout = adminTimeout;
@@ -150,6 +158,22 @@ public class SimpleEventService implements EventService {
         final Sort sort = (filter.sort() == null) ? DEFAULT_SORT : SORT_BY_DATE;
         final Pageable pageable = PageRequest.of(filter.from() / filter.size(), filter.size(), sort);
         return repository.findAll(where, pageable).getContent();
+    }
+
+    @Override
+    public List<Event> getRecommendationsForUser(final long userId, final int maxResults) {
+        requireUserExist(userId);
+        final List<Long> eventIds = analyzerClient.getRecommendationsForUser(userId, maxResults)
+                .map(RecommendedEventProto::getEventId)
+                .toList();
+        final InternalEventFilter filter = InternalEventFilter.builder()
+                .events(eventIds)
+                .build();
+        final Map<Long, Event> events = findAll(filter).stream()
+                .collect(Collectors.toMap(Event::getId, Function.identity()));
+        return eventIds.stream()
+                .map(events::get)
+                .toList();
     }
 
     @Override

@@ -10,6 +10,7 @@ import ru.practicum.ewm.analyzer.mapper.RecommendedEventMapper;
 import ru.practicum.ewm.analyzer.message.InteractionsCountRequestProto;
 import ru.practicum.ewm.analyzer.message.RecommendedEventProto;
 import ru.practicum.ewm.analyzer.message.SimilarEventsRequestProto;
+import ru.practicum.ewm.analyzer.message.UserPredictionsRequestProto;
 import ru.practicum.ewm.analyzer.model.RecommendedEvent;
 import ru.practicum.ewm.analyzer.service.RecommendationsControllerGrpc;
 import ru.practicum.ewm.analyzer.service.SimilarityScoreService;
@@ -25,6 +26,34 @@ public class RecommendationController extends RecommendationsControllerGrpc.Reco
     private final UserScoreService userScoreService;
     private final SimilarityScoreService similarityScoreService;
     private final RecommendedEventMapper mapper;
+
+    @Override
+    public void getRecommendationsForUser(
+            final UserPredictionsRequestProto request,
+            final StreamObserver<RecommendedEventProto> responseObserver
+    ) {
+        try {
+            log.info("Received request for recommended events: userId = {}, maxResults = {}",
+                    request.getUserId(), request.getMaxResults());
+            log.debug("Recommended events request = {}", request);
+            final List<RecommendedEvent> events = similarityScoreService.getRecommendationsForUser(request.getUserId(),
+                    request.getMaxResults());
+            final List<RecommendedEventProto> dtos = mapper.mapToDto(events);
+            dtos.forEach(responseObserver::onNext);
+            log.info("Processed request for recommended events: userId = {}, maxResults = {}",
+                    request.getUserId(), request.getMaxResults());
+            log.debug("Recommended events = {}", dtos);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            log.error("Recommended events request processing error: {}\nRecommended events request = {}",
+                    e.getMessage(), request, e);
+            responseObserver.onError(new StatusRuntimeException(
+                    Status.INTERNAL
+                            .withDescription(e.getLocalizedMessage())
+                            .withCause(e)
+            ));
+        }
+    }
 
     @Override
     public void getSimilarEvents(
