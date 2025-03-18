@@ -68,6 +68,13 @@ public class UserRichEventServiceFacade implements EventService {
     }
 
     @Override
+    public List<Event> getRecommendationsForUser(final long userId, final int maxResults) {
+        final List<Event> events = service.getRecommendationsForUser(userId, maxResults);
+        fetchUser(events);
+        return events;
+    }
+
+    @Override
     public Optional<Event> findById(final long id) {
         return service.findById(id).map(this::fetchUser);
     }

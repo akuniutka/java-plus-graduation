@@ -9,5 +9,7 @@ public interface SimilarityScoreService {
 
     void updateSimilarityScore(SimilarityScore newScore);
 
-    List<RecommendedEvent> findNewSimilarEvents(long requesterId, long sampleEventId, int numberOfEvents);
+    List<RecommendedEvent> getRecommendationsForUser(long userId, int maxResults);
+
+    List<RecommendedEvent> findNewSimilarEvents(long requesterId, long sampleEventId, int maxResults);
 }

@@ -22,6 +22,8 @@ public interface EventService {
 
     List<Event> findAll(PublicEventFilter filter);
 
+    List<Event> getRecommendationsForUser(long userId, int maxResults);
+
     Optional<Event> findById(long id);
 
     Optional<Event> findByIdAndInitiatorId(long id, long initiatorId);
