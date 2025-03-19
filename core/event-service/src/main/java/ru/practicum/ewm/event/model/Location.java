@@ -1,10 +1,14 @@
 package ru.practicum.ewm.event.model;
 
 import jakarta.persistence.Embeddable;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 @Embeddable
-@Data
+@Getter
+@Setter
+@ToString
 public class Location {
 
     private Float lat;

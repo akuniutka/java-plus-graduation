@@ -6,14 +6,18 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.time.Instant;
 
 @Entity
 @Table(name = "similarity_scores")
-@Data
+@Getter
+@Setter
+@ToString
 @EqualsAndHashCode(of = "id")
 public class SimilarityScore {
 
