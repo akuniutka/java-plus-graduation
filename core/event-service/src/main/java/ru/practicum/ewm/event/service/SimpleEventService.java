@@ -161,6 +161,22 @@ public class SimpleEventService implements EventService {
     }
 
     @Override
+    public List<Event> getNewSimilarEvents(final long requesterId, final long sampleEventId, final int maxResults) {
+        requireUserExist(requesterId);
+        final List<Long> eventIds = analyzerClient.getNewSimilarEvents(requesterId, sampleEventId, maxResults)
+                .map(RecommendedEventProto::getEventId)
+                .toList();
+        final InternalEventFilter filter = InternalEventFilter.builder()
+                .events(eventIds)
+                .build();
+        final Map<Long, Event> events = findAll(filter).stream()
+                .collect(Collectors.toMap(Event::getId, Function.identity()));
+        return eventIds.stream()
+                .map(events::get)
+                .toList();
+    }
+
+    @Override
     public List<Event> getRecommendationsForUser(final long userId, final int maxResults) {
         requireUserExist(userId);
         final List<Long> eventIds = analyzerClient.getRecommendationsForUser(userId, maxResults)
