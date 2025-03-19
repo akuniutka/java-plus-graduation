@@ -11,15 +11,19 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import ru.practicum.ewm.event.dto.EventShortDto;
 
 import java.util.Set;
 
 @Entity
 @Table(name = "compilations")
-@Data
+@Getter
+@Setter
+@ToString
 @EqualsAndHashCode(of = "id")
 public class Compilation {
 

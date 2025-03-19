@@ -15,8 +15,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import ru.practicum.ewm.category.model.Category;
 import ru.practicum.ewm.user.dto.UserShortDto;
 
@@ -24,7 +26,9 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "events")
-@Data
+@Getter
+@Setter
+@ToString
 @EqualsAndHashCode(of = "id")
 public class Event {
 
