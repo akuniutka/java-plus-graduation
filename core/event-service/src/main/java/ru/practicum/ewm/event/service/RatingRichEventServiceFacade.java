@@ -93,6 +93,13 @@ public class RatingRichEventServiceFacade implements EventService {
     }
 
     @Override
+    public List<Event> getNewSimilarEvents(final long requesterId, final long sampleEventId, final int maxResults) {
+        final List<Event> events = service.getNewSimilarEvents(requesterId, sampleEventId, maxResults);
+        fetchRatings(events);
+        return events;
+    }
+
+    @Override
     public List<Event> getRecommendationsForUser(final long userId, final int maxResults) {
         final List<Event> events = service.getRecommendationsForUser(userId, maxResults);
         fetchRatings(events);

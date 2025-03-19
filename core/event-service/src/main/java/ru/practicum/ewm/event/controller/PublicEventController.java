@@ -62,6 +62,22 @@ public class PublicEventController {
         return dtos;
     }
 
+    @GetMapping("/{eventId}/similar")
+    public List<EventShortDto> getNewSimilarEvents(
+            @PathVariable("eventId") final long sampleEventId,
+            @RequestHeader(USER_HEADER) final long requesterId,
+            @RequestParam(defaultValue = "10") final int maxResults
+    ) {
+        log.info("Received request for new similar events: requesterId = {}, sampleEventId = {}, maxResults = {}",
+                requesterId, sampleEventId, maxResults);
+        final List<Event> events = service.getNewSimilarEvents(requesterId, sampleEventId, maxResults);
+        final List<EventShortDto> dtos = mapper.mapToShortDto(events);
+        log.info("Responded with requested new similar events: requesterId = {}, sampleEventId = {}, maxResults = {}",
+                requesterId, sampleEventId, maxResults);
+        log.debug("Similar events = {}", dtos);
+        return dtos;
+    }
+
     @GetMapping("/recommendations")
     public List<EventShortDto> getRecommendations(
             @RequestHeader(USER_HEADER) final long userId,
