@@ -30,9 +30,11 @@
 		<protobuf.version>3.23.4</protobuf.version>
 		<grpc-spring-boot-starter.version>3.1.0.RELEASE</grpc-spring-boot-starter.version>
 		<avro.version>1.11.3</avro.version>
+		<mapstruct.version>1.6.0</mapstruct.version>
 
 		<protobuf-plugin.version>2.4.0</protobuf-plugin.version>
 		<avro-maven-plugin.version>${avro.version}</avro-maven-plugin.version>
+		<build-helper-maven-plugin.version>3.6.0</build-helper-maven-plugin.version>
 	</properties>
 
 	<dependencyManagement>
@@ -69,6 +71,16 @@
 				<artifactId>avro</artifactId>
 				<version>${avro.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.mapstruct</groupId>
+				<artifactId>mapstruct</artifactId>
+				<version>${mapstruct.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.mapstruct</groupId>
+				<artifactId>mapstruct-processor</artifactId>
+				<version>${mapstruct.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -84,6 +96,11 @@
 					<groupId>org.apache.avro</groupId>
 					<artifactId>avro-maven-plugin</artifactId>
 					<version>${avro-maven-plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>build-helper-maven-plugin</artifactId>
+					<version>${build-helper-maven-plugin.version}</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>

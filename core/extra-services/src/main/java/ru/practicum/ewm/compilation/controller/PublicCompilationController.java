@@ -25,7 +25,7 @@ import java.util.List;
 public class PublicCompilationController {
 
     private final CompilationService service;
-    private final CompilationMapper mapper;
+    private final CompilationMapper compilationMapper;
 
     @GetMapping
     public List<CompilationDto> findAll(
@@ -36,7 +36,7 @@ public class PublicCompilationController {
         log.info("Received request for compilations: pinned = {}, from = {}, size = {}", pinned, from, size);
         final Pageable pageable = PageRequest.of(from / size, size);
         final List<Compilation> compilations = service.findAll(pinned, pageable);
-        final List<CompilationDto> dtos = mapper.mapToDto(compilations);
+        final List<CompilationDto> dtos = compilationMapper.mapToDto(compilations);
         log.info("Responded with requested compilations: pinned = {}, from = {}, size = {}", pinned, from, size);
         log.debug("Requested compilations = {}", dtos);
         return dtos;
@@ -46,7 +46,7 @@ public class PublicCompilationController {
     public CompilationDto getById(@PathVariable final long id) {
         log.info("Received request for compilation: id = {}", id);
         final Compilation compilation = service.getById(id);
-        final CompilationDto dto = mapper.mapToDto(compilation);
+        final CompilationDto dto = compilationMapper.mapToDto(compilation);
         log.info("Responded with requested compilation: id = {}", dto.id());
         log.debug("Requested compilation = {}", dto);
         return dto;

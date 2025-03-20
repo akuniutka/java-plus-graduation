@@ -3,7 +3,9 @@ package ru.practicum.ewm.event.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -19,9 +21,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import ru.practicum.ewm.event.mapper.EventMapper;
 import ru.practicum.ewm.event.model.Event;
 import ru.practicum.ewm.event.dto.EventFullDto;
-import ru.practicum.ewm.event.mapper.EventMapper;
 import ru.practicum.ewm.event.model.EventPatch;
 import ru.practicum.ewm.event.service.EventService;
 import ru.practicum.ewm.event.dto.EventShortDto;
@@ -32,24 +34,20 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/users/{userId}/events")
+@RequiredArgsConstructor
 @Slf4j
 public class PrivateEventController {
 
+    private static final long DEFAULT_PARTICIPANT_LIMIT = 0L;
+    private static final boolean DEFAULT_PAID = false;
+    private static final boolean DEFAULT_REQUEST_MODERATION = true;
     private static final Sort DEFAULT_SORT = Sort.by("id");
 
+    @Qualifier("ratingRichEventServiceFacade")
     private final EventService service;
-    private final EventMapper mapper;
-    private final EventDtoValidatorExtension validatorExtension;
 
-    public PrivateEventController(
-            final EventService ratingRichEventServiceFacade,
-            final EventMapper mapper,
-            final EventDtoValidatorExtension validatorExtension
-    ) {
-        this.service = ratingRichEventServiceFacade;
-        this.mapper = mapper;
-        this.validatorExtension = validatorExtension;
-    }
+    private final EventMapper eventMapper;
+    private final EventDtoValidatorExtension validatorExtension;
 
     @InitBinder
     public void initBinder(final WebDataBinder binder) {
@@ -61,9 +59,10 @@ public class PrivateEventController {
     public EventFullDto add(@PathVariable final long userId, @RequestBody @Valid final NewEventDto dtoIn) {
         log.info("Received request to add new event: title = {}, eventDate = {}", dtoIn.title(), dtoIn.eventDate());
         log.debug("New event = {}", dtoIn);
-        Event event = mapper.mapToEvent(userId, dtoIn);
+        final NewEventDto dtoInWithDefaults = withDefaults(dtoIn);
+        Event event = eventMapper.mapToEvent(userId, dtoInWithDefaults);
         event = service.add(event);
-        final EventFullDto dtoOut = mapper.mapToFullDto(event);
+        final EventFullDto dtoOut = eventMapper.mapToFullDto(event);
         log.info("Responded with event added: id = {}, title = {}, eventDate = {}", dtoOut.id(), dtoOut.title(),
                 dtoOut.eventDate());
         log.debug("Event added = {}", dtoOut);
@@ -79,7 +78,7 @@ public class PrivateEventController {
         log.info("Received request for events: initiatorId = {}, from = {}, size = {}", userId, from, size);
         final Pageable pageable = PageRequest.of(from / size, size, DEFAULT_SORT);
         final List<Event> events = service.findAllByInitiatorId(userId, pageable);
-        final List<EventShortDto> dtos = mapper.mapToShortDto(events);
+        final List<EventShortDto> dtos = eventMapper.mapToShortDto(events);
         log.info("Responded with requested events: initiatorId = {}, from = {}, size = {}", userId, from, size);
         log.debug("Requested events = {}", dtos);
         return dtos;
@@ -89,7 +88,7 @@ public class PrivateEventController {
     public EventFullDto getByIdAndInitiatorId(@PathVariable final long userId, @PathVariable final long eventId) {
         log.info("Received request for event: id = {}, initiatorId = {}", eventId, userId);
         final Event event = service.getByIdAndInitiatorId(eventId, userId);
-        final EventFullDto dto = mapper.mapToFullDto(event);
+        final EventFullDto dto = eventMapper.mapToFullDto(event);
         log.info("Responded with requested event: id = {}, initiatorId = {}", dto.id(), dto.initiator().id());
         log.debug("Requested event = {}", dto);
         return dto;
@@ -104,11 +103,21 @@ public class PrivateEventController {
         log.info("Received request to update event: event id = {}, user id = {}, state action = {}", eventId, userId,
                 dtoIn.stateAction());
         log.debug("Event patch = {}", dtoIn);
-        final EventPatch patch = mapper.mapToPatch(dtoIn);
+        final EventPatch patch = eventMapper.mapToPatch(dtoIn);
         final Event event = service.update(eventId, patch, userId);
-        final EventFullDto dtoOut = mapper.mapToFullDto(event);
+        final EventFullDto dtoOut = eventMapper.mapToFullDto(event);
         log.info("Responded with updated event: id = {}, stat = {}", dtoOut.id(), dtoOut.state());
         log.debug("Updated event = {}", dtoOut);
         return dtoOut;
+    }
+
+    private NewEventDto withDefaults(final NewEventDto dto) {
+        return dto.toBuilder()
+                .participantLimit(dto.participantLimit() == null ? DEFAULT_PARTICIPANT_LIMIT : dto.participantLimit())
+                .paid(dto.paid() == null ? DEFAULT_PAID : dto.paid())
+                .requestModeration(dto.requestModeration() == null
+                        ? DEFAULT_REQUEST_MODERATION
+                        : dto.requestModeration())
+                .build();
     }
 }

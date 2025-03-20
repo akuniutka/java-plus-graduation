@@ -27,16 +27,16 @@ import ru.practicum.ewm.category.dto.CategoryUpdateDto;
 public class CategoryAdminController {
 
     private final CategoryService service;
-    private final CategoryMapper mapper;
+    private final CategoryMapper categoryMapper;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CategoryDto add(@RequestBody @Valid final CategoryCreateDto dtoIn) {
         log.info("Received request to add new category: name = {}", dtoIn.name());
         log.debug("New category = {}", dtoIn);
-        Category category = mapper.mapToCategory(dtoIn);
+        Category category = categoryMapper.mapToCategory(dtoIn);
         category = service.save(category);
-        final CategoryDto dtoOut = mapper.mapToDto(category);
+        final CategoryDto dtoOut = categoryMapper.mapToDto(category);
         log.info("Responded with category added: id = {}. name = {}", dtoOut.id(), dtoOut.name());
         log.debug("Category added = {}", dtoOut);
         return dtoOut;
@@ -46,9 +46,9 @@ public class CategoryAdminController {
     public CategoryDto update(@PathVariable final long id, @RequestBody @Valid final CategoryUpdateDto dtoIn) {
         log.info("Received request to update category: id = {}", id);
         log.debug("Category patch = {}", dtoIn);
-        final CategoryPatch patch = mapper.mapToCategoryPatch(dtoIn);
+        final CategoryPatch patch = categoryMapper.mapToCategoryPatch(dtoIn);
         final Category category = service.update(id, patch);
-        final CategoryDto dtoOut = mapper.mapToDto(category);
+        final CategoryDto dtoOut = categoryMapper.mapToDto(category);
         log.info("Responded with updated category: id = {}", dtoOut.id());
         log.debug("Updated category = {}", dtoOut);
         return dtoOut;

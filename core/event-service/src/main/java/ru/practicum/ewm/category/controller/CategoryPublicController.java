@@ -26,7 +26,7 @@ import java.util.List;
 public class CategoryPublicController {
 
     private final CategoryService service;
-    private final CategoryMapper mapper;
+    private final CategoryMapper categoryMapper;
 
     @GetMapping
     public List<CategoryDto> findAll(
@@ -36,7 +36,7 @@ public class CategoryPublicController {
         log.info("Received request for categories: from = {}, size = {}", from, size);
         final Pageable pageable = PageRequest.of(from / size, size, Sort.by("id"));
         final List<Category> categories = service.findAll(pageable);
-        final List<CategoryDto> dtos = mapper.mapToDto(categories);
+        final List<CategoryDto> dtos = categoryMapper.mapToDto(categories);
         log.info("Responded with requested categories: from = {}, size = {}", from, size);
         log.debug("Requested categories = {}", dtos);
         return dtos;
@@ -46,7 +46,7 @@ public class CategoryPublicController {
     public CategoryDto getById(@PathVariable final long id) {
         log.info("Received request for category: id = {}", id);
         final Category category = service.getById(id);
-        final CategoryDto dto = mapper.mapToDto(category);
+        final CategoryDto dto = categoryMapper.mapToDto(category);
         log.info("Responded with requested category: id = {}", dto.id());
         log.debug("Requested category = {}", dto);
         return dto;

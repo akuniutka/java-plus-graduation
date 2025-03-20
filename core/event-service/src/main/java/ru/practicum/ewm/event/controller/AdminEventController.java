@@ -1,7 +1,9 @@
 package ru.practicum.ewm.event.controller;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
@@ -22,25 +24,18 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/admin/events")
+@RequiredArgsConstructor
 @Slf4j
 public class AdminEventController {
 
     private static final int DEFAULT_PAGE_FROM = 0;
     private static final int DEFAULT_PAGE_SIZE = 10;
 
+    @Qualifier("ratingRichEventServiceFacade")
     private final EventService service;
-    private final EventMapper mapper;
-    private final EventDtoValidatorExtension validatorExtension;
 
-    public AdminEventController(
-            final EventService ratingRichEventServiceFacade,
-            final EventMapper mapper,
-            final EventDtoValidatorExtension validatorExtension
-    ) {
-        this.service = ratingRichEventServiceFacade;
-        this.mapper = mapper;
-        this.validatorExtension = validatorExtension;
-    }
+    private final EventMapper eventMapper;
+    private final EventDtoValidatorExtension validatorExtension;
 
     @InitBinder
     public void initBinder(final WebDataBinder binder) {
@@ -52,7 +47,7 @@ public class AdminEventController {
         log.info("Received request for events: filter = {}", filter);
         final AdminEventFilter filterWithDefaults = withDefaults(filter);
         final List<Event> events = service.findAll(filterWithDefaults);
-        final List<EventFullDto> dtos = mapper.mapToFullDto(events);
+        final List<EventFullDto> dtos = eventMapper.mapToFullDto(events);
         log.info("Responded with requested events: filter = {}", filter);
         log.debug("Requested events = {}", dtos);
         return dtos;
@@ -62,9 +57,9 @@ public class AdminEventController {
     public EventFullDto update(@PathVariable final long eventId, @RequestBody @Valid UpdateEventAdminRequest dtoIn) {
         log.info("Received request to update event: id = {}, state action = {}", eventId, dtoIn.stateAction());
         log.debug("Event patch = {}", dtoIn);
-        final EventPatch patch = mapper.mapToPatch(dtoIn);
+        final EventPatch patch = eventMapper.mapToPatch(dtoIn);
         final Event event = service.update(eventId, patch);
-        final EventFullDto dtoOut = mapper.mapToFullDto(event);
+        final EventFullDto dtoOut = eventMapper.mapToFullDto(event);
         log.info("Responded with updated event: id = {}, state = {}", dtoOut.id(), dtoOut.state());
         log.debug("Updated event = {}", dtoOut);
         return dtoOut;

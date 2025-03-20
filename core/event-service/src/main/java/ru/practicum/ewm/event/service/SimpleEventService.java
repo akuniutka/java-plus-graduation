@@ -83,6 +83,8 @@ public class SimpleEventService implements EventService {
         validateEventDate(event.getEventDate(), userTimeout);
         requireUserExist(event.getInitiatorId());
         event.setCategory(getCategoryById(event.getCategory().getId()));
+        event.setState(EventState.PENDING);
+        event.setCreatedOn(LocalDateTime.now(clock));
         final Event savedEvent = repository.save(event);
         log.info("Added new event: id = {}, title = {}, eventDate = {}", savedEvent.getId(), savedEvent.getTitle(),
                 savedEvent.getEventDate());

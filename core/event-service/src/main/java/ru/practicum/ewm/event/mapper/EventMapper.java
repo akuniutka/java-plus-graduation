@@ -1,188 +1,52 @@
 package ru.practicum.ewm.event.mapper;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ValueMapping;
+import org.mapstruct.ValueMappings;
 import ru.practicum.ewm.category.mapper.CategoryMapper;
 import ru.practicum.ewm.event.dto.EventCondensedDto;
-import ru.practicum.ewm.event.dto.LocationDto;
-import ru.practicum.ewm.event.model.EventPatch;
+import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.dto.EventShortDto;
-import ru.practicum.ewm.event.model.EventState;
-import ru.practicum.ewm.event.model.Location;
 import ru.practicum.ewm.event.dto.NewEventDto;
 import ru.practicum.ewm.event.dto.UpdateEventAdminRequest;
 import ru.practicum.ewm.event.dto.UpdateEventUserRequest;
-import ru.practicum.ewm.event.dto.EventFullDto;
 import ru.practicum.ewm.event.model.Event;
+import ru.practicum.ewm.event.model.EventPatch;
+import ru.practicum.ewm.event.model.EventState;
 
-import java.time.Clock;
-import java.time.LocalDateTime;
 import java.util.List;
 
-@Component
-@RequiredArgsConstructor
-public class EventMapper {
+@Mapper(uses = {CategoryMapper.class, LocationMapper.class})
+public interface EventMapper {
 
-    private final Clock clock;
-    private final CategoryMapper categoryMapper;
+    Event mapToEvent(long initiatorId, NewEventDto dto);
 
-    public Event mapToEvent(final long userId, final NewEventDto dto) {
-        final Event event = new Event();
-        event.setInitiatorId(userId);
-        if (dto != null) {
-            event.setTitle(dto.title());
-            event.setCategory(categoryMapper.mapToCategory(dto.category()));
-            event.setEventDate(dto.eventDate());
-            event.setLocation(mapToLocation(dto.location()));
-            event.setAnnotation(dto.annotation());
-            event.setDescription(dto.description());
-            event.setParticipantLimit(dto.participantLimit() == null ? 0L : dto.participantLimit());
-            event.setPaid(Boolean.TRUE.equals(dto.paid()));
-            event.setRequestModeration(dto.requestModeration() == null || dto.requestModeration());
-        }
-        event.setCreatedOn(LocalDateTime.now(clock));
-        event.setState(EventState.PENDING);
-        return event;
-    }
+    @Mapping(target = "state", source = "stateAction")
+    EventPatch mapToPatch(UpdateEventAdminRequest dto);
 
-    public EventPatch mapToPatch(final UpdateEventAdminRequest dto) {
-        if (dto == null) {
-            return null;
-        }
-        return EventPatch.builder()
-                .title(dto.title())
-                .category(categoryMapper.mapToCategory(dto.category()))
-                .eventDate(dto.eventDate())
-                .location(mapToLocation(dto.location()))
-                .annotation(dto.annotation())
-                .description(dto.description())
-                .participantLimit(dto.participantLimit())
-                .paid(dto.paid())
-                .requestModeration(dto.requestModeration())
-                .state(
-                        switch (dto.stateAction()) {
-                            case PUBLISH_EVENT -> EventState.PUBLISHED;
-                            case REJECT_EVENT -> EventState.CANCELED;
-                            case null -> null;
-                        }
-                )
-                .build();
-    }
+    @Mapping(target = "state", source = "stateAction")
+    EventPatch mapToPatch(UpdateEventUserRequest dto);
 
-    public EventPatch mapToPatch(final UpdateEventUserRequest dto) {
-        if (dto == null) {
-            return null;
-        }
-        return EventPatch.builder()
-                .title(dto.title())
-                .category(categoryMapper.mapToCategory(dto.category()))
-                .eventDate(dto.eventDate())
-                .location(mapToLocation(dto.location()))
-                .annotation(dto.annotation())
-                .description(dto.description())
-                .participantLimit(dto.participantLimit())
-                .paid(dto.paid())
-                .requestModeration(dto.requestModeration())
-                .state(
-                        switch (dto.stateAction()) {
-                            case SEND_TO_REVIEW -> EventState.PENDING;
-                            case CANCEL_REVIEW -> EventState.CANCELED;
-                            case null -> null;
-                        }
-                )
-                .build();
-    }
+    EventFullDto mapToFullDto(Event event);
 
-    public EventFullDto mapToFullDto(final Event event) {
-        if (event == null) {
-            return null;
-        }
-        return EventFullDto.builder()
-                .id(event.getId())
-                .initiator(event.getInitiator())
-                .title(event.getTitle())
-                .category(categoryMapper.mapToDto(event.getCategory()))
-                .eventDate(event.getEventDate())
-                .location(mapToDto(event.getLocation()))
-                .annotation(event.getAnnotation())
-                .description(event.getDescription())
-                .participantLimit(event.getParticipantLimit())
-                .paid(event.isPaid())
-                .requestModeration(event.isRequestModeration())
-                .confirmedRequests(event.getConfirmedRequests())
-                .rating(event.getRating())
-                .createdOn(event.getCreatedOn())
-                .publishedOn(event.getPublishedOn())
-                .state(event.getState())
-                .build();
-    }
+    List<EventFullDto> mapToFullDto(List<Event> event);
 
-    public List<EventFullDto> mapToFullDto(final List<Event> events) {
-        if (events == null) {
-            return null;
-        }
-        return events.stream()
-                .map(this::mapToFullDto)
-                .toList();
-    }
+    EventShortDto mapToShortDto(Event event);
 
-    public EventShortDto mapToShortDto(final Event event) {
-        if (event == null) {
-            return null;
-        }
-        return EventShortDto.builder()
-                .id(event.getId())
-                .initiator(event.getInitiator())
-                .title(event.getTitle())
-                .category(categoryMapper.mapToDto(event.getCategory()))
-                .eventDate(event.getEventDate())
-                .annotation(event.getAnnotation())
-                .paid(event.isPaid())
-                .confirmedRequests(event.getConfirmedRequests())
-                .rating(event.getRating())
-                .build();
-    }
+    List<EventShortDto> mapToShortDto(List<Event> events);
 
-    public List<EventShortDto> mapToShortDto(final List<Event> events) {
-        if (events == null) {
-            return null;
-        }
-        return events.stream()
-                .map(this::mapToShortDto)
-                .toList();
-    }
+    EventCondensedDto mapToCondensedDto(Event event);
 
-    public EventCondensedDto mapToCondensedDto(final Event event) {
-        if (event == null) {
-            return null;
-        }
-        return EventCondensedDto.builder()
-                .id(event.getId())
-                .initiatorId(event.getInitiatorId())
-                .eventDate(event.getEventDate())
-                .participantLimit(event.getParticipantLimit())
-                .requestModeration(event.isRequestModeration())
-                .state(event.getState())
-                .build();
-    }
+    @ValueMappings({
+            @ValueMapping(target = "PUBLISHED", source = "PUBLISH_EVENT"),
+            @ValueMapping(target = "CANCELED", source = "REJECT_EVENT")
+    })
+    EventState mapAdminAction(UpdateEventAdminRequest.AdminAction adminAction);
 
-    private Location mapToLocation(final LocationDto dto) {
-        if (dto == null) {
-            return null;
-        }
-        final Location location = new Location();
-        location.setLat(dto.lat());
-        location.setLon(dto.lon());
-        return location;
-    }
-
-    private LocationDto mapToDto(final Location location) {
-        if (location == null) {
-            return null;
-        }
-        return LocationDto.builder()
-                .lat(location.getLat())
-                .lon(location.getLon())
-                .build();
-    }
+    @ValueMappings({
+            @ValueMapping(target = "PENDING", source = "SEND_TO_REVIEW"),
+            @ValueMapping(target = "CANCELED", source = "CANCEL_REVIEW")
+    })
+    EventState mapUserAction(UpdateEventUserRequest.UserAction userAction);
 }

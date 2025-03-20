@@ -26,16 +26,16 @@ import ru.practicum.ewm.compilation.service.CompilationService;
 public class AdminCompilationController {
 
     private final CompilationService service;
-    private final CompilationMapper mapper;
+    private final CompilationMapper compilationMapper;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CompilationDto save(@RequestBody @Valid final NewCompilationDto dtoIn) {
         log.info("Received request to add new compilation: title = {}", dtoIn.title());
         log.debug("New compilation = {}", dtoIn);
-        Compilation compilation = mapper.mapToCompilation(dtoIn);
+        Compilation compilation = compilationMapper.mapToCompilation(dtoIn);
         compilation = service.save(compilation);
-        final CompilationDto dtoOut = mapper.mapToDto(compilation);
+        final CompilationDto dtoOut = compilationMapper.mapToDto(compilation);
         log.info("Responded with compilation added: id = {}, title = {}", dtoOut.id(), dtoOut.title());
         log.debug("Compilation added = {}", dtoOut);
         return dtoOut;
@@ -49,7 +49,7 @@ public class AdminCompilationController {
         log.info("Received request to update compilation: id = {}", id);
         log.debug("Compilation patch = {}", dtoIn);
         final Compilation compilation = service.update(id, dtoIn);
-        final CompilationDto dtoOut = mapper.mapToDto(compilation);
+        final CompilationDto dtoOut = compilationMapper.mapToDto(compilation);
         log.info("Responded with updated compilation: id = {}", id);
         log.debug("Updated compilation = {}", dtoIn);
         return dtoOut;
