@@ -1,7 +1,9 @@
 package ru.practicum.ewm.event.controller;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -19,6 +21,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/events")
+@RequiredArgsConstructor
 @Slf4j
 public class PublicEventController {
 
@@ -27,16 +30,10 @@ public class PublicEventController {
     private static final int DEFAULT_PAGE_FROM = 0;
     private static final int DEFAULT_PAGE_SIZE = 10;
 
+    @Qualifier("ratingRichEventServiceFacade")
     private final EventService service;
-    private final EventMapper mapper;
 
-    public PublicEventController(
-            final EventService ratingRichEventServiceFacade,
-            final EventMapper mapper
-    ) {
-        this.service = ratingRichEventServiceFacade;
-        this.mapper = mapper;
-    }
+    private final EventMapper eventMapper;
 
     @GetMapping("/{eventId}")
     public EventFullDto getByIdAndPublished(
@@ -45,7 +42,7 @@ public class PublicEventController {
     ) {
         log.info("Received request for event: userId = {}, eventId = {}", userId, eventId);
         final Event event = service.getByIdAndPublished(userId, eventId);
-        final EventFullDto dto = mapper.mapToFullDto(event);
+        final EventFullDto dto = eventMapper.mapToFullDto(event);
         log.info("Responded with requested event: eventId = {}", dto.id());
         log.debug("Requested event = {}", dto);
         return dto;
@@ -56,7 +53,7 @@ public class PublicEventController {
         log.info("Received request for events: filter = {}", filter);
         final PublicEventFilter filterWithDefaults = withDefaults(filter);
         final List<Event> events = service.findAll(filterWithDefaults);
-        final List<EventShortDto> dtos = mapper.mapToShortDto(events);
+        final List<EventShortDto> dtos = eventMapper.mapToShortDto(events);
         log.info("Responded with requested events: filter = {}", filter);
         log.debug("Requested events = {}", dtos);
         return dtos;
@@ -71,7 +68,7 @@ public class PublicEventController {
         log.info("Received request for new similar events: requesterId = {}, sampleEventId = {}, maxResults = {}",
                 requesterId, sampleEventId, maxResults);
         final List<Event> events = service.getNewSimilarEvents(requesterId, sampleEventId, maxResults);
-        final List<EventShortDto> dtos = mapper.mapToShortDto(events);
+        final List<EventShortDto> dtos = eventMapper.mapToShortDto(events);
         log.info("Responded with requested new similar events: requesterId = {}, sampleEventId = {}, maxResults = {}",
                 requesterId, sampleEventId, maxResults);
         log.debug("Similar events = {}", dtos);
@@ -85,7 +82,7 @@ public class PublicEventController {
     ) {
         log.info("Received request for recommendations: userId = {}, maxResults = {}", userId, maxResults);
         final List<Event> events = service.getRecommendationsForUser(userId, maxResults);
-        final List<EventShortDto> dtos = mapper.mapToShortDto(events);
+        final List<EventShortDto> dtos = eventMapper.mapToShortDto(events);
         log.info("Responded with requested recommendations: userId = {}, maxResults = {}", userId, maxResults);
         log.debug("Requested recommendations = {}", dtos);
         return dtos;
